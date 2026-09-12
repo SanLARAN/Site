@@ -44,15 +44,6 @@
       "bg": "#ffd84d"
     },
     {
-      "id": "b_flame",
-      "name": "Огонь",
-      "price": 150,
-      "icon": "🔥",
-      "label": "🔥",
-      "color": "#ffffff",
-      "bg": "#e11d48"
-    },
-    {
       "id": "b_dev",
       "name": "DEV",
       "price": 200,
