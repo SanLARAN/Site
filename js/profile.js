@@ -145,9 +145,9 @@
       totalSize = blobs.reduce((s, b) => s + (b.size || 0), 0);
     } catch (e) {}
 
-    const bannerHtml = prof.banner
-      ? `<img class="banner-img" src="${escapeHtml(GH.rawUrl(prof.banner))}?cb=${Date.now()}" alt="баннер" />`
-      : `<div class="banner-img banner-placeholder" style="--uc:${escapeHtml(prof.color || "#3a3a3a")}"></div>`;
+    const heroBg = prof.banner
+      ? `background-image:url('${escapeHtml(GH.rawUrl(prof.banner))}?cb=${Date.now()}')`
+      : `background-image:linear-gradient(120deg, ${escapeHtml(prof.color || "#3a3a3a")}, var(--bg))`;
 
     app.innerHTML = `
       <div class="breadcrumbs">
@@ -156,16 +156,14 @@
       </div>
 
       <div class="profile-wrap">
-        <div class="card profile-hero">
-          <div class="banner">
-            ${bannerHtml}
-            <div class="banner-actions">
-              <label class="icon-btn" title="Загрузить баннер (GIF/PNG/JPG)">${icon("image")}<input type="file" id="bannerInput" accept=".gif,.png,.jpg,.jpeg,.webp" class="hidden" /></label>
-              ${prof.banner ? `<button class="icon-btn" id="bannerRemove" title="Убрать баннер">${icon("trash")}</button>` : ""}
-              <label class="icon-btn" title="Цвет профиля">${icon("palette")}<input type="color" id="colorInput" value="${escapeHtml(prof.color || "#ffffff")}" class="hidden" /></label>
-            </div>
+        <div class="card profile-hero" style="${heroBg}">
+          <div class="profile-hero-overlay"></div>
+          <div class="banner-actions">
+            <label class="icon-btn" title="Загрузить баннер (GIF/PNG/JPG)">${icon("image")}<input type="file" id="bannerInput" accept=".gif,.png,.jpg,.jpeg,.webp" class="hidden" /></label>
+            ${prof.banner ? `<button class="icon-btn" id="bannerRemove" title="Убрать баннер">${icon("trash")}</button>` : ""}
+            <label class="icon-btn" title="Цвет профиля">${icon("palette")}<input type="color" id="colorInput" value="${escapeHtml(prof.color || "#ffffff")}" class="hidden" /></label>
           </div>
-          <div class="profile-hero-body">
+          <div class="profile-hero-content">
             <span class="uframe big" data-user="${escapeHtml(login)}"><img class="gh-avatar big" src="${escapeHtml(u.avatar_url + "&s=200")}" alt="" /></span>
             <div class="profile-hero-info">
               <h2 class="uname" data-user="${escapeHtml(login)}">${escapeHtml(u.name || login)}</h2>
@@ -173,7 +171,7 @@
                 <span class="muted">@${escapeHtml(login)}</span>
                 <span class="nb" data-user="${escapeHtml(login)}"></span>
               </div>
-              <div class="points-badge" id="pointsBadge">${icon("star")} ${prof.points || 0} очков</div>
+              <div class="points-badge hero" id="pointsBadge">${icon("star")} ${prof.points || 0} очков</div>
               <div class="profile-stats">
                 <div class="stat"><b>${posts.length}</b><span>${window.UI.ruPlural(posts.length, "пост", "поста", "постов")}</span></div>
                 <div class="stat"><b>${filesCount == null ? "—" : filesCount}</b><span>файлов</span></div>
