@@ -35,15 +35,6 @@
   ],
   "badges": [
     {
-      "id": "b_star",
-      "name": "Звезда",
-      "price": 80,
-      "icon": "★",
-      "label": "★",
-      "color": "#0b0b0b",
-      "bg": "#ffd84d"
-    },
-    {
       "id": "b_dev",
       "name": "DEV",
       "price": 200,
