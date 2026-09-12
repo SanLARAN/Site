@@ -21,12 +21,6 @@
       "name": "DedSec",
       "price": 10000,
       "image": "data/shop/frames/f_mtyx75av.png"
-    },
-    {
-      "id": "f_mtyxpb16",
-      "name": "Snoop",
-      "price": 150000,
-      "image": "data/shop/frames/f_mtyxpb16.png"
     }
   ],
   "badges": [
