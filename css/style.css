@@ -43,6 +43,7 @@ html[data-theme="dark"] {
   --code-bg: #020202;
   --grid-line: rgba(255, 255, 255, 0.045);
   --crt-on: 1;
+  color-scheme: dark;
 }
 
 /* ---------- светлая тема ---------- */
@@ -69,6 +70,7 @@ html[data-theme="light"] {
   --code-bg: #0a0a0a;
   --grid-line: rgba(0, 0, 0, 0.05);
   --crt-on: 0;
+  color-scheme: light;
 }
 
 /* ============================================================
@@ -128,12 +130,6 @@ html[data-theme="light"] .scanlines { mix-blend-mode: normal; }
   position: absolute; inset: 0;
   background: radial-gradient(ellipse 120% 90% at 50% 40%, transparent 58%, rgba(0, 0, 0, calc(0.42 * var(--crt-on))) 100%);
 }
-.scan-sweep {
-  position: absolute; left: 0; right: 0; height: 90px;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255, calc(0.03 * var(--crt-on))), transparent);
-  animation: sweep 8s linear infinite;
-}
-
 /* ============================================================
    ФОН-СЕТКА
    ============================================================ */
@@ -243,11 +239,6 @@ html[data-theme="light"] .ic-moon { display: none; }
   content: ""; position: absolute; inset: 0;
   background: repeating-linear-gradient(to bottom, transparent 0 3px, rgba(0,0,0,0.18) 3px 4px);
   pointer-events: none; opacity: calc(0.45 * var(--crt-on));
-}
-.hero::after {
-  content: ""; position: absolute; left: 0; right: 0; height: 70px; top: -90px;
-  background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.05), transparent);
-  animation: sweep 7s linear infinite; pointer-events: none;
 }
 .hero-inner { position: relative; z-index: 1; }
 .ascii-logo {
@@ -397,12 +388,13 @@ html[data-theme="light"] .ic-moon { display: none; }
   display: inline-flex; align-items: center; gap: 6px;
   padding: 3px 10px; border-radius: var(--radius-sm);
   font-size: 11.5px; font-weight: 700; font-family: var(--font-mono);
-  color: var(--text); border: 1px solid var(--border-strong);
-  background: var(--surface); line-height: 1.7; letter-spacing: 0.04em;
+  color: #fff; line-height: 1.7; letter-spacing: 0.04em;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+  background: #555; /* запасной цвет, перекрывается inline-стилем */
 }
 .cat-badge .ic { width: 13px; height: 13px; }
 .cat-badge .ic path, .cat-badge .ic circle { fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.cat-badge.closed { color: var(--text-3); border-style: dashed; border-color: var(--border); }
+.cat-badge.closed { background: #6b7280; color: #fff; }
 
 /* ============================================================
    ТУЛБАР ФОРУМА / ПОИСК
@@ -555,6 +547,7 @@ html[data-theme="light"] .ic-moon { display: none; }
 .input::placeholder, .textarea::placeholder { color: var(--text-3); }
 .textarea { resize: vertical; line-height: 1.6; }
 .select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--text) 50%), linear-gradient(135deg, var(--text) 50%, transparent 50%); background-position: calc(100% - 18px) 50%, calc(100% - 13px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 38px; }
+.select option { background: var(--bg-2); color: var(--text); }
 .form-card { padding: 26px; }
 
 .md-toolbar { display: flex; gap: 2px; flex-wrap: wrap; padding: 7px; border: 1px solid var(--border); border-bottom: none; border-radius: var(--radius) var(--radius) 0 0; background: var(--surface-2); }
@@ -836,7 +829,6 @@ html[data-theme="light"] .glitch::after { color: rgba(90,90,90,0.85); }
   100% { transform: rotate(360deg); }
 }
 @keyframes caretBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-@keyframes sweep { 0% { top: -100px; } 100% { top: 100%; } }
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(14px); }
@@ -891,5 +883,5 @@ html[data-theme="light"] .glitch::after { color: rgba(90,90,90,0.85); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.001s !important; animation-iteration-count: 1 !important; transition-duration: 0.001s !important; }
-  .noise, .scan-sweep { display: none; }
+  .noise { display: none; }
 }

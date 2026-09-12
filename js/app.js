@@ -126,7 +126,7 @@
         const cat = (p.labels || []).find((l) => CFG.categories.some((c) => c.label === l.name));
         return `
           <article class="post-card" data-num="${p.number}">
-            <div class="post-card-top">${cat ? `<span class="cat-badge">${escapeHtml(cat.name)}</span>` : ""}${p.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}</div>
+            <div class="post-card-top">${cat ? `<span class="cat-badge" style="background:${cat.color}">${escapeHtml(cat.name)}</span>` : ""}${p.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}</div>
             <h2 class="post-card-title">${escapeHtml(p.title)}</h2>
             <div class="post-card-meta">
               <span class="item">${icon("refresh")}${timeAgo(p.created_at)}</span>
