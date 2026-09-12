@@ -1,12 +1,12 @@
 {
   "login": "SanLARAN",
   "color": "#ffffff",
-  "banner": "",
+  "banner": "profiles/SanLARAN/banner.gif",
   "points": 0,
   "owned": [],
   "equipped": {
     "frame": "",
     "badge": ""
   },
-  "updated_at": "2026-09-12T21:28:20.283Z"
+  "updated_at": "2026-09-12T21:30:10.837Z"
 }
