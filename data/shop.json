@@ -1,14 +1,6 @@
 {
   "frames": [
     {
-      "id": "f_gold",
-      "name": "Золото",
-      "price": 250,
-      "icon": "🥇",
-      "bg": "conic-gradient(from 0deg, #fbbf24, #f59e0b, #fde68a, #fbbf24)",
-      "shadow": "0 0 14px rgba(251,191,36,0.55)"
-    },
-    {
       "id": "f_rgb",
       "name": "RGB",
       "price": 400,
