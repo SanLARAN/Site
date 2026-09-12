@@ -32,6 +32,12 @@
       "label": "DEV",
       "color": "#ffffff",
       "bg": "#0a0a0a"
+    },
+    {
+      "id": "b_mtyxqzs7",
+      "name": "Snoop",
+      "price": 150000,
+      "image": "data/shop/badges/b_mtyxqzs7.png"
     }
   ]
 }
