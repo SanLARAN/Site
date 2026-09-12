@@ -27,6 +27,23 @@
   }
 
   const IMG_EXTS = ["png", "jpg", "jpeg", "gif", "webp", "svg", "bmp", "ico", "avif"];
+  const VIDEO_EXTS = ["mp4", "webm", "mov", "m4v", "ogv", "mkv"];
+  const AUDIO_EXTS = ["mp3", "wav", "ogg", "flac", "m4a", "aac", "opus", "weba"];
+  const PDF_EXTS = ["pdf"];
+  const TEXT_EXTS = ["md", "txt", "json", "js", "css", "html", "htm", "xml", "yml", "yaml",
+    "sh", "py", "java", "c", "cpp", "h", "hpp", "ts", "tsx", "jsx", "rs", "go", "rb", "php",
+    "sql", "csv", "log", "ini", "toml", "conf", "bat", "ps1", "lua", "swift", "kt"];
+
+  function previewKind(entry) {
+    if (!entry || entry.type === "dir") return "dir";
+    const ext = fileExt(entry.name);
+    if (IMG_EXTS.includes(ext)) return "image";
+    if (VIDEO_EXTS.includes(ext)) return "video";
+    if (AUDIO_EXTS.includes(ext)) return "audio";
+    if (PDF_EXTS.includes(ext)) return "pdf";
+    if (TEXT_EXTS.includes(ext)) return "text";
+    return "other";
+  }
 
   function rawUrl(entry) {
     if (!entry) return "";
@@ -233,13 +250,15 @@
   function entryHTML(entry, i) {
     const isDir = entry.type === "dir";
     const ext = fileExt(entry.name);
-    const isImg = !isDir && IMG_EXTS.includes(ext);
+    const kind = previewKind(entry);
     const selected = state.selected.has(entry.path);
     const thumb = isDir
       ? `<div class="thumb">${icon("folder")}</div>`
-      : isImg
+      : kind === "image"
         ? `<div class="thumb"><img src="${escapeHtml(entry.download_url)}" alt="" loading="lazy" /></div>`
-        : `<div class="thumb">${icon(fileIconFor(ext))}</div>`;
+        : kind === "video"
+          ? `<div class="thumb"><video src="${escapeHtml(entry.download_url)}" muted preload="metadata" playsinline></video></div>`
+          : `<div class="thumb">${icon(fileIconFor(ext))}</div>`;
     const meta = isDir ? "папка" : formatBytes(entry.size);
     const actions = `
       <div class="fs-actions">
@@ -260,11 +279,11 @@
 
   function fileIconFor(ext) {
     if (IMG_EXTS.includes(ext)) return "image";
-    if (["zip", "rar", "7z", "tar", "gz"].includes(ext)) return "folder";
-    if (["mp4", "mov", "avi", "mkv", "webm"].includes(ext)) return "image";
-    if (["mp3", "wav", "ogg", "flac"].includes(ext)) return "news";
-    if (["pdf"].includes(ext)) return "file";
-    if (["md", "txt", "json", "js", "css", "html", "py", "java", "c", "cpp", "ts"].includes(ext)) return "file";
+    if (VIDEO_EXTS.includes(ext)) return "film";
+    if (AUDIO_EXTS.includes(ext)) return "music";
+    if (PDF_EXTS.includes(ext)) return "doc";
+    if (TEXT_EXTS.includes(ext)) return "file";
+    if (["zip", "rar", "7z", "tar", "gz", "bz2", "xz"].includes(ext)) return "folder";
     return "file";
   }
 
@@ -305,22 +324,57 @@
       loadDir(true);
       return;
     }
+    const kind = previewKind(entry);
     const ext = fileExt(entry.name);
     const root = document.getElementById("modal-root");
     const backdrop = document.createElement("div");
     backdrop.className = "modal-backdrop";
-    if (IMG_EXTS.includes(ext)) {
+
+    const header = `
+      <div class="flex" style="padding:6px 8px 12px;">
+        <div style="font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(entry.name)}</div>
+        <span class="spacer"></span>
+        <button class="icon-btn" data-act="link" title="Ссылка">${icon("link")}</button>
+        <button class="icon-btn" data-act="dl" title="Скачать">${icon("download")}</button>
+        <button class="icon-btn" data-act="x" title="Закрыть">${icon("close")}</button>
+      </div>`;
+
+    if (kind === "image") {
       backdrop.innerHTML = `
         <div class="modal" style="max-width:820px;padding:12px;">
-          <div class="flex" style="padding:6px 8px 12px;">
-            <div style="font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${escapeHtml(entry.name)}</div>
-            <span class="spacer"></span>
-            <button class="icon-btn" data-act="link" title="Ссылка">${icon("link")}</button>
-            <button class="icon-btn" data-act="dl" title="Скачать">${icon("download")}</button>
-            <button class="icon-btn" data-act="x" title="Закрыть">${icon("close")}</button>
-          </div>
+          ${header}
           <img src="${escapeHtml(entry.download_url)}" alt="${escapeHtml(entry.name)}" style="width:100%;border-radius:12px;display:block;max-height:76vh;object-fit:contain;background:var(--code-bg);" />
         </div>`;
+    } else if (kind === "video") {
+      backdrop.innerHTML = `
+        <div class="modal" style="max-width:860px;padding:12px;">
+          ${header}
+          <video src="${escapeHtml(entry.download_url)}" controls autoplay playsinline style="width:100%;max-height:76vh;border-radius:12px;display:block;background:#000;"></video>
+        </div>`;
+    } else if (kind === "audio") {
+      backdrop.innerHTML = `
+        <div class="modal" style="max-width:560px;padding:12px;">
+          ${header}
+          <div style="display:grid;place-items:center;padding:26px 0;border-radius:12px;background:var(--surface-2);margin-bottom:12px;">
+            <div class="big-ic" style="color:var(--a3);">${icon("music", "big-ic")}</div>
+          </div>
+          <audio src="${escapeHtml(entry.download_url)}" controls style="width:100%;"></audio>
+          <p class="muted" style="margin:12px 0 0;font-size:13px;text-align:center;">${formatBytes(entry.size)}</p>
+        </div>`;
+    } else if (kind === "pdf") {
+      backdrop.innerHTML = `
+        <div class="modal" style="max-width:900px;padding:12px;">
+          ${header}
+          <iframe src="${escapeHtml(entry.download_url)}" title="${escapeHtml(entry.name)}" style="width:100%;height:76vh;border:0;border-radius:12px;background:#fff;"></iframe>
+          <p class="muted" style="margin:10px 4px 0;font-size:12.5px;">Если документ не открылся встроенным просмотрщиком — скачайте файл.</p>
+        </div>`;
+    } else if (kind === "text") {
+      backdrop.innerHTML = `
+        <div class="modal" style="max-width:860px;padding:12px;">
+          ${header}
+          <div class="text-preview"><pre id="textPreview"><span class="muted">Загрузка…</span></pre></div>
+        </div>`;
+      fetchTextPreview(entry, backdrop.querySelector("#textPreview"));
     } else {
       backdrop.innerHTML = `
         <div class="modal">
@@ -349,6 +403,20 @@
       else if (act === "dl") { window.open(entry.download_url, "_blank"); close(); }
       else if (act === "link") { copyLink(entry); close(); }
     }));
+  }
+
+  async function fetchTextPreview(entry, target) {
+    if (!target) return;
+    try {
+      const res = await fetch(entry.download_url);
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const head = await res.text();
+      const LIMIT = 256 * 1024;
+      const text = head.length > LIMIT ? head.slice(0, LIMIT) + "\n… (показаны первые " + formatBytes(LIMIT) + ")" : head;
+      target.textContent = text;
+    } catch (e) {
+      target.innerHTML = `<span class="error-text">${escapeHtml("Не удалось загрузить текст: " + e.message)}</span>`;
+    }
   }
 
   function downloadEntry(entry) {

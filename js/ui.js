@@ -49,7 +49,10 @@
     cart: '<path d="M6 7h12l1.2 13H4.8L6 7Z"/><path d="M9 10V6a3 3 0 0 1 6 0v4"/>',
     palette: '<path d="M12 3a9 9 0 1 0 0 18c1.6 0 2.1-1.1 1.8-2.1-.3-1 .2-2 1.4-2H17a4 4 0 0 0 4-4c0-5-4-10-9-10Z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10.5" cy="7.5" r="1"/><circle cx="15" cy="7.5" r="1"/>',
     gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v9h14v-9"/><path d="M12 8v13"/><path d="M12 8s-4-4-5-1c-1 3 2 5 5 1Zm0 0s4-4 5-1c1 3-2 5-5 1Z"/>',
-    star: '<path fill="currentColor" stroke="none" d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.4l-5.8 3 1.1-6.4L.4 9.3l6.5-.9Z"/>'
+    star: '<path fill="currentColor" stroke="none" d="M12 2.5l2.9 5.9 6.5.9-4.7 4.6 1.1 6.4L12 17.4l-5.8 3 1.1-6.4L.4 9.3l6.5-.9Z"/>',
+    music: '<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>',
+    film: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 4v16M17 4v16M3 9h4M3 15h4M17 9h4M17 15h4"/>',
+    doc: '<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5M9 13h6M9 17h6"/>'
   };
 
   function icon(name, cls) {
@@ -225,6 +228,13 @@
       " / __ |/ // / /|_/ // //    / ",
       "/_/ |_/____/_/  /_/___/_/|_/  ",
       "                              "
+    ].join("\n"),
+    user: [
+      "  _   _ ___  ____ ____",
+      " / | / / __/ / __// __/",
+      "/ /_/ /\\ \\/ / /  _\\ \\  ",
+      "\\____/___/_/_/  /___/  ",
+      "                       "
     ].join("\n")
   };
 

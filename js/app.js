@@ -66,6 +66,12 @@
       case "profile":
         PROFILES.renderProfile();
         break;
+      case "user": {
+        const login = decodeURIComponent(route.args[0] || "");
+        if (!login) { location.hash = "#/forum"; break; }
+        PROFILES.renderProfile(login);
+        break;
+      }
       case "shop":
         SHOP.renderShop();
         break;

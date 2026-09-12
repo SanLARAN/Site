@@ -134,14 +134,28 @@
   }
 
   /* ============================================================
-   *  СТРАНИЦА ПРОФИЛЯ
+   *  СТРАНИЦА ПРОФИЛЯ (свой или публичный)
    * ============================================================ */
-  async function renderProfile() {
+  async function renderProfile(viewLogin) {
     const app = document.getElementById("app");
-    if (!GH.isLoggedIn()) { location.hash = "#/login"; return; }
-    const u = GH.getUser();
-    const login = u.login;
+    const me = GH.isLoggedIn() ? GH.getUser().login : null;
+    const isOwn = !viewLogin || (me && String(viewLogin).toLowerCase() === me.toLowerCase());
+    const login = isOwn ? me : String(viewLogin || "");
+
+    if (isOwn && !me) { location.hash = "#/login"; return; }
+    if (!login) { location.hash = "#/forum"; return; }
+
     app.innerHTML = `<div class="loading-row"><div class="spinner"></div></div>`;
+
+    // данные GitHub-аккаунта
+    let u = null;
+    try {
+      u = isOwn ? GH.getUser() : await GH.fetchUserByLogin(login);
+    } catch (e) {
+      app.innerHTML = `<div class="state-box">${icon("warning", "big-ic")}<h3>Пользователь не найден</h3><p class="error-text">${escapeHtml(e.message)}</p></div>`;
+      return;
+    }
+    if (!u) { location.hash = "#/forum"; return; }
 
     let prof;
     try { prof = await ProfileCache.get(login); } catch (e) { prof = GH.defaultProfile(login); }
@@ -166,17 +180,17 @@
     app.innerHTML = `
       <div class="breadcrumbs">
         <a href="#/forum">${icon("home")}</a> <span>›</span>
-        <span>Профиль</span>
+        <span>${isOwn ? "Профиль" : "@" + escapeHtml(login)}</span>
       </div>
 
       <div class="profile-wrap">
         <div class="card profile-hero" style="${heroBg}">
           <div class="profile-hero-overlay"></div>
-          <div class="banner-actions">
+          ${isOwn ? `<div class="banner-actions">
             <label class="icon-btn" title="Загрузить баннер (GIF/PNG/JPG)">${icon("image")}<input type="file" id="bannerInput" accept=".gif,.png,.jpg,.jpeg,.webp" class="hidden" /></label>
             ${prof.banner ? `<button class="icon-btn" id="bannerRemove" title="Убрать баннер">${icon("trash")}</button>` : ""}
             <label class="icon-btn" title="Цвет профиля">${icon("palette")}<input type="color" id="colorInput" value="${escapeHtml(prof.color || "#ffffff")}" class="hidden" /></label>
-          </div>
+          </div>` : ""}
           <div class="profile-hero-content">
             <span class="uframe big" data-user="${escapeHtml(login)}"><img class="gh-avatar big" src="${escapeHtml(u.avatar_url + "&s=200")}" alt="" /></span>
             <div class="profile-hero-info">
@@ -193,26 +207,28 @@
                 <div class="stat"><b>${totalSize == null ? "—" : formatBytes(totalSize)}</b><span>занято</span></div>
               </div>
               <div class="profile-actions">
-                <a class="btn btn-primary btn-sm" href="#/new">${icon("plus")} Новый пост</a>
-                <a class="btn btn-ghost btn-sm" href="#/storage">${icon("folder")} Хранилище</a>
-                <a class="btn btn-ghost btn-sm" href="#/shop">${icon("cart")} Магазин</a>
+                ${isOwn ? `
+                  <a class="btn btn-primary btn-sm" href="#/new">${icon("plus")} Новый пост</a>
+                  <a class="btn btn-ghost btn-sm" href="#/storage">${icon("folder")} Хранилище</a>
+                  <a class="btn btn-ghost btn-sm" href="#/shop">${icon("cart")} Магазин</a>` : `
+                  <a class="btn btn-ghost btn-sm" href="${escapeHtml(u.html_url)}" target="_blank" rel="noopener">${icon("github")} Профиль GitHub</a>`}
               </div>
             </div>
           </div>
         </div>
 
-        <div class="card admin-section">
+        ${isOwn ? `<div class="card admin-section">
           <h3>${icon("gift")} Мои предметы</h3>
           <div id="ownedItems"><div class="loading-row"><div class="spinner"></div></div></div>
-        </div>
+        </div>` : ""}
 
-        <h2 class="comments-title" style="margin-top:8px;">Мои посты</h2>
+        <h2 class="comments-title" style="margin-top:8px;">${isOwn ? "Мои посты" : "Посты"}</h2>
         <div class="post-list" id="myPosts"></div>
       </div>`;
 
     decorateUsers(app);
-    renderOwnedItems(login, prof);
-    renderMyPosts(posts);
+    if (isOwn) renderOwnedItems(login, prof);
+    renderMyPosts(posts, isOwn);
 
     // обработчики
     const colorInput = app.querySelector("#colorInput");
@@ -330,12 +346,12 @@
       </div>`;
   }
 
-  /* ---------- мои посты ---------- */
-  function renderMyPosts(posts) {
+  /* ---------- посты пользователя ---------- */
+  function renderMyPosts(posts, isOwn) {
     const list = document.getElementById("myPosts");
     if (!list) return;
     if (!posts.length) {
-      list.innerHTML = `<div class="state-box">${icon("chat", "big-ic")}<h3>Постов пока нет</h3><p>Напишите свой первый пост!</p></div>`;
+      list.innerHTML = `<div class="state-box">${icon("chat", "big-ic")}<h3>Постов пока нет</h3><p>${isOwn ? "Напишите свой первый пост!" : "Пользователь пока ничего не публиковал."}</p></div>`;
       return;
     }
     list.innerHTML = posts.map((p) => {

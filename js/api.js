@@ -115,6 +115,10 @@
     const { body } = await request("GET", "/user");
     return body;
   }
+  async function fetchUserByLogin(login) {
+    const { body } = await request("GET", `/users/${encodeURIComponent(login)}`);
+    return body;
+  }
 
   /* ---------- тикеты (посты) ---------- */
   function listIssues(opts) {
@@ -359,7 +363,7 @@
     loadToken, saveToken, saveUser, clearSession,
     getToken, getUser, isLoggedIn,
     request, ApiError,
-    fetchUser,
+    fetchUser, fetchUserByLogin,
     listIssues, getIssue, createIssue, updateIssue, closeIssue, reopenIssue,
     listComments, createComment, updateComment, deleteComment,
     lockIssue, unlockIssue,

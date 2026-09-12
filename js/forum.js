@@ -91,6 +91,7 @@
     }
 
     app.querySelector("#feedList").addEventListener("click", (e) => {
+      if (e.target.closest("a")) return; // клик по ссылке (профиль) не открывает пост
       const card = e.target.closest(".post-card");
       if (card) location.hash = "#/post/" + card.dataset.num;
     });
@@ -200,7 +201,7 @@
         <h2 class="post-card-title">${escapeHtml(p.title)}</h2>
         ${preview ? `<p class="post-card-preview">${preview}</p>` : ""}
         <div class="post-card-meta">
-          <span class="post-author">${avatar(p.user)}${uname(p.user)}${nbadge(p.user)}</span>
+          <span class="post-author">${authorLink(p.user)}</span>
           <span class="item">${icon("refresh")}${timeAgo(p.created_at)}</span>
           <span class="item">${icon("comment")}${p.comments}</span>
         </div>
@@ -222,6 +223,11 @@
   function nbadge(user) {
     if (!user) return "";
     return `<span class="nb" data-user="${escapeHtml(user.login)}"></span>`;
+  }
+
+  function authorLink(user) {
+    if (!user) return "";
+    return `<a class="user-link" href="#/user/${encodeURIComponent(user.login)}" title="Профиль @${escapeHtml(user.login)}">${avatar(user)}${uname(user)}${nbadge(user)}</a>`;
   }
 
   function decorate(scope) {
@@ -262,15 +268,15 @@
             ${isPinned(issue) ? `<span class="cat-badge pinned">${icon("pin")} закреплено</span>` : ""}
             <h1>${escapeHtml(issue.title)}</h1>
             <div class="byline">
-              ${avatar(issue.user, 80)}
-              <span>Автор: <a class="uname" data-user="${escapeHtml(issue.user ? issue.user.login : "")}" href="${escapeHtml(issue.user ? issue.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(issue.user ? issue.user.login : "unknown")}</a>${nbadge(issue.user)}</span>
+              <a class="byline-avatar" href="#/user/${encodeURIComponent(issue.user ? issue.user.login : "")}" title="Профиль">${avatar(issue.user, 80)}</a>
+              <span>Автор: <a class="uname" data-user="${escapeHtml(issue.user ? issue.user.login : "")}" href="#/user/${encodeURIComponent(issue.user ? issue.user.login : "")}">${escapeHtml(issue.user ? issue.user.login : "unknown")}</a>${nbadge(issue.user)}</span>
               <span>·</span>
               <span>${formatDate(issue.created_at)}</span>
             </div>
           </div>
           <div class="article-body md-content">${MD.renderMarkdown(issue.body)}</div>
           <div class="post-actions-row">
-            <button class="like-btn" id="likeBtn">${icon("heart")} <span id="likeCount">…</span></button>
+            <div class="reactions-bar" id="reactionsBar"></div>
             ${isAuthor(issue) ? `<button class="btn btn-ghost btn-sm" id="editPost">${icon("edit")} Редактировать</button>` : ""}
             ${isAuthor(issue) ? (issue.state === "open"
               ? `<button class="btn btn-ghost btn-sm" id="closePost">Закрыть</button>`
@@ -290,9 +296,6 @@
     // реакции
     loadReactions(issue);
 
-    const likeBtn = app.querySelector("#likeBtn");
-    likeBtn.addEventListener("click", () => toggleLike(issue));
-
     const editBtn = app.querySelector("#editPost");
     if (editBtn) editBtn.addEventListener("click", () => renderComposer(issue));
     const closeBtn = app.querySelector("#closePost");
@@ -310,38 +313,61 @@
     decorate(app);
   }
 
+  const REACTIONS = [
+    { key: "+1",      emoji: "👍" },
+    { key: "-1",      emoji: "👎" },
+    { key: "laugh",   emoji: "😄" },
+    { key: "hooray",  emoji: "🎉" },
+    { key: "confused", emoji: "😕" },
+    { key: "heart",   emoji: "❤️" },
+    { key: "rocket",  emoji: "🚀" },
+    { key: "eyes",    emoji: "👀" }
+  ];
+
   async function loadReactions(issue) {
-    const btn = document.getElementById("likeBtn");
-    const countEl = document.getElementById("likeCount");
+    const bar = document.getElementById("reactionsBar");
+    if (!bar) return;
     try {
       const { body } = await GH.listReactions(issue.number);
-      const total = (body || []).length;
-      const mine = GH.isLoggedIn() && (body || []).some((r) => r.user && r.user.login === GH.getUser().login);
-      countEl.textContent = total;
-      if (mine) { btn.classList.add("liked"); btn.dataset.mine = "1"; }
-      btn.dataset.ready = "1";
+      const all = body || [];
+      const me = GH.isLoggedIn() ? GH.getUser().login : null;
+      const counts = {};
+      const mine = {};
+      all.forEach((r) => {
+        counts[r.content] = (counts[r.content] || 0) + 1;
+        if (me && r.user && r.user.login === me) mine[r.content] = r.id;
+      });
+      bar.innerHTML = REACTIONS.map((rc) => {
+        const cnt = counts[rc.key] || 0;
+        const active = mine[rc.key] ? " active" : "";
+        return `<button class="reaction-btn${active}" data-reaction="${rc.key}" title="${rc.key}" ${cnt ? "" : "data-zero=\"1\""}>
+          <span class="r-emoji">${rc.emoji}</span>${cnt ? `<span class="r-count">${cnt}</span>` : ""}
+        </button>`;
+      }).join("");
+      bar.querySelectorAll(".reaction-btn").forEach((b) => {
+        b.addEventListener("click", () => toggleReaction(issue, b.dataset.reaction));
+      });
     } catch (e) {
-      countEl.textContent = "—";
-      btn.title = e.message;
+      bar.innerHTML = `<span class="muted" style="font-size:12.5px;">${escapeHtml(e.message)}</span>`;
     }
   }
 
-  async function toggleLike(issue) {
-    if (!GH.isLoggedIn()) { toast("Войдите, чтобы ставить лайки.", "info"); location.hash = "#/login"; return; }
-    const btn = document.getElementById("likeBtn");
-    btn.disabled = true;
+  async function toggleReaction(issue, content) {
+    if (!GH.isLoggedIn()) { toast("Войдите, чтобы ставить реакции.", "info"); location.hash = "#/login"; return; }
+    const btn = document.querySelector(`#reactionsBar [data-reaction="${content}"]`);
+    if (btn) btn.disabled = true;
     try {
       const { body } = await GH.listReactions(issue.number);
-      const mine = (body || []).find((r) => r.user && r.user.login === GH.getUser().login);
+      const all = body || [];
+      const me = GH.getUser().login;
+      const mine = all.find((r) => r.user && r.user.login === me && r.content === content);
       if (mine) {
         await GH.deleteReaction(mine.id);
-        btn.classList.remove("liked");
       } else {
-        await GH.addReaction(issue.number, "+1");
-        btn.classList.add("liked");
-        UI.asciiBurst(btn);
-        if (window.PROFILES) {
-          const me = GH.getUser().login;
+        const hadAny = all.some((r) => r.user && r.user.login === me);
+        await GH.addReaction(issue.number, content);
+        if (btn) UI.asciiBurst(btn);
+        if (!hadAny && window.PROFILES) {
           window.PROFILES.earn(me, "like");
           if (issue.user && issue.user.login && issue.user.login !== me) {
             window.PROFILES.earn(issue.user.login, "receiveLike");
@@ -351,8 +377,7 @@
       loadReactions(issue);
     } catch (e) {
       toast(e.message, "error");
-    } finally {
-      btn.disabled = false;
+      if (btn) btn.disabled = false;
     }
   }
 
@@ -384,9 +409,9 @@
     return `
       <div class="card comment" data-comment="${c.id}">
         <div class="comment-head">
-          ${avatar(c.user, 80)}
+          <a class="byline-avatar" href="#/user/${encodeURIComponent(c.user ? c.user.login : "")}" title="Профиль">${avatar(c.user, 80)}</a>
           <div class="who">
-            <div><a class="uname" data-user="${escapeHtml(c.user ? c.user.login : "")}" href="${escapeHtml(c.user ? c.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(c.user ? c.user.login : "unknown")}</a>${nbadge(c.user)}${c.author_association === "OWNER" || c.author_association === "MEMBER" ? `<span class="badge-author">автор</span>` : ""}</div>
+            <div><a class="uname" data-user="${escapeHtml(c.user ? c.user.login : "")}" href="#/user/${encodeURIComponent(c.user ? c.user.login : "")}">${escapeHtml(c.user ? c.user.login : "unknown")}</a>${nbadge(c.user)}${c.author_association === "OWNER" || c.author_association === "MEMBER" ? `<span class="badge-author">автор</span>` : ""}</div>
             <span class="when">${formatDate(c.created_at)}</span>
           </div>
           ${mine ? `<div class="comment-actions">
