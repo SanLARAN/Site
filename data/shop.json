@@ -1,14 +1,6 @@
 {
   "frames": [
     {
-      "id": "f_neon",
-      "name": "Неон",
-      "price": 120,
-      "icon": "💠",
-      "bg": "conic-gradient(from 180deg, #22d3ee, #a855f7, #f472b6, #22d3ee)",
-      "shadow": "0 0 14px rgba(168,85,247,0.55)"
-    },
-    {
       "id": "f_gold",
       "name": "Золото",
       "price": 250,
