@@ -23,6 +23,12 @@
       "icon": "⚡",
       "bg": "linear-gradient(120deg, #ffffff, #888888, #ffffff)",
       "shadow": "0 0 10px rgba(255,255,255,0.7)"
+    },
+    {
+      "id": "f_mtyx75av",
+      "name": "DedSec",
+      "price": 10000,
+      "image": "data/shop/frames/f_mtyx75av.png"
     }
   ],
   "badges": [
