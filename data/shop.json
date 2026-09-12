@@ -9,14 +9,6 @@
       "shadow": "0 0 16px rgba(255,255,255,0.5)"
     },
     {
-      "id": "f_glitch",
-      "name": "Глитч",
-      "price": 180,
-      "icon": "⚡",
-      "bg": "linear-gradient(120deg, #ffffff, #888888, #ffffff)",
-      "shadow": "0 0 10px rgba(255,255,255,0.7)"
-    },
-    {
       "id": "f_mtyx75av",
       "name": "DedSec",
       "price": 10000,
