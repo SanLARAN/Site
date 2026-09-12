@@ -203,7 +203,7 @@
 
     const cls = state.view === "grid" ? "fs-grid" : "fs-list";
     container.innerHTML = `<div class="${cls}" id="fsGrid">` +
-      sorted.map(entryHTML).join("") + `</div>`;
+      sorted.map((e, i) => entryHTML(e, i)).join("") + `</div>`;
 
     const grid = container.querySelector("#fsGrid");
     grid.querySelectorAll(".fs-item").forEach((item) => {
@@ -230,7 +230,7 @@
     });
   }
 
-  function entryHTML(entry) {
+  function entryHTML(entry, i) {
     const isDir = entry.type === "dir";
     const ext = fileExt(entry.name);
     const isImg = !isDir && IMG_EXTS.includes(ext);
@@ -249,7 +249,7 @@
         <button class="mini-btn danger" data-act="del" title="Удалить">${icon("trash")}</button>
       </div>`;
     return `
-      <div class="fs-item ${isDir ? "folder" : ""} ${state.selectMode ? "selectable" : ""} ${selected ? "selected" : ""}" data-path="${escapeHtml(entry.path)}">
+      <div class="fs-item ${isDir ? "folder" : ""} ${state.selectMode ? "selectable" : ""} ${selected ? "selected" : ""}" data-path="${escapeHtml(entry.path)}" style="--i:${i}">
         <div class="check"></div>
         ${thumb}
         <div class="fname" title="${escapeHtml(entry.name)}">${escapeHtml(entry.name)}</div>

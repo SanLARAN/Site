@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Aurora — открытый форум и личное облако-хранилище на GitHub Pages" />
+  <meta name="description" content="AURORA — терминал-форум и личное облако-хранилище на GitHub Pages" />
   <meta name="color-scheme" content="dark light" />
-  <title>Aurora · Форум и хранилище</title>
+  <title>AURORA // форум и хранилище</title>
   <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -21,22 +21,19 @@
     <span class="grid-overlay"></span>
   </div>
 
+  <!-- CRT-оверлей -->
+  <div class="crt" aria-hidden="true">
+    <span class="scanlines"></span>
+    <span class="noise"></span>
+    <span class="vignette"></span>
+    <span class="scan-sweep"></span>
+  </div>
+
   <header class="topbar">
     <div class="topbar-inner">
-      <a class="brand" href="#/forum" data-nav="forum">
-        <span class="brand-mark">
-          <svg viewBox="0 0 32 32" width="30" height="30" aria-hidden="true">
-            <defs>
-              <linearGradient id="brandGrad" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stop-color="#6366f1"/>
-                <stop offset="0.5" stop-color="#a855f7"/>
-                <stop offset="1" stop-color="#22d3ee"/>
-              </linearGradient>
-            </defs>
-            <path fill="url(#brandGrad)" d="M16 2c2 6.6 6 10.6 12.6 12.6C22 16.6 18 20.6 16 27.4 14 20.6 10 16.6 3.4 14.6 10 10.6 14 6.6 16 2Z"/>
-          </svg>
-        </span>
-        <span class="brand-name">Aurora</span>
+      <a class="brand" href="#/forum" data-nav="forum" title="Aurora forum">
+        <span class="brand-user">aurora@forum</span><span class="brand-prompt">:</span><span class="brand-path">~</span><span class="brand-prompt">$</span>
+        <span class="brand-caret"></span>
       </a>
 
       <nav class="mainnav" aria-label="Основная навигация">
@@ -64,8 +61,9 @@
 
   <footer class="site-footer">
     <div class="footer-inner">
-      <p><span class="footer-brand">Aurora</span> · форум на GitHub Issues и хранилище в репозитории <a id="footerRepo" href="#" target="_blank" rel="noopener">SanLARAN/Site</a>.</p>
-      <p class="footer-sub">Хостится на GitHub Pages. Данные — в вашем репозитории.</p>
+      <pre class="ascii-line">┌───────────────────────────────────────────────────────────┐</pre>
+      <p><span class="footer-brand">AURORA</span> · форум на GitHub Issues и хранилище в репозитории <a id="footerRepo" href="#" target="_blank" rel="noopener">SanLARAN/Site</a>.</p>
+      <p class="footer-sub">▸ хостится на GitHub Pages · данные — в вашем репозитории · v2.0</p>
     </div>
   </footer>
 

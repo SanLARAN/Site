@@ -139,5 +139,33 @@
     return (val >= 100 || i === 0 ? Math.round(val) : val.toFixed(1)) + " " + units[i];
   }
 
-  window.UI = { ICONS, icon, toast, confirmModal, timeAgo, formatDate, formatBytes, escapeHtml: escapeHtmlSafe, ruPlural };
+  /* ---------- ASCII-логотип и терминальный boot-лог ---------- */
+  const ASCII_LOGO = [
+    " █████╗ ██╗   ██╗██████╗  ██████╗ ██████╗  █████╗ ",
+    "██╔══██╗██║   ██║██╔══██╗██╔═══██╗██╔══██╗██╔══██╗",
+    "███████║██║   ██║██████╔╝██║   ██║██████╔╝███████║",
+    "██╔══██║██║   ██║██╔══██╗██║   ██║██╔══██╗██╔══██║",
+    "██║  ██║╚██████╔╝██║  ██║╚██████╔╝██║  ██║██║  ██║",
+    "╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝ ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝"
+  ].join("\n");
+
+  // печатает строки boot-лога по очереди (эффект терминала)
+  function bootType(container, lines, speed) {
+    speed = speed || 180;
+    const el = container;
+    if (!el) return;
+    el.innerHTML = "";
+    let i = 0;
+    (function next() {
+      if (i >= lines.length) return;
+      const line = document.createElement("div");
+      line.className = "l";
+      line.innerHTML = lines[i];
+      el.appendChild(line);
+      i++;
+      if (i < lines.length) setTimeout(next, speed + Math.random() * 120);
+    })();
+  }
+
+  window.UI = { ICONS, ASCII_LOGO, icon, bootType, toast, confirmModal, timeAgo, formatDate, formatBytes, escapeHtml: escapeHtmlSafe, ruPlural };
 })();

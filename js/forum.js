@@ -35,13 +35,17 @@
    * ============================================================ */
   function renderFeed() {
     const app = document.getElementById("app");
+    const { ASCII_LOGO, bootType } = window.UI;
     app.innerHTML = `
       <section class="hero">
-        <h1>Добро пожаловать в <span class="grad-text">${escapeHtml(CFG.siteName)}</span></h1>
-        <p>${escapeHtml(CFG.tagline)}. Пишите посты, обсуждайте в комментариях и храните файлы — всё живёт в репозитории ${escapeHtml(CFG.owner + "/" + CFG.repo)}.</p>
-        <div class="hero-actions">
-          <button class="btn btn-primary btn-lg" id="heroNewPost">${icon("plus")} Новый пост</button>
-          <a class="btn btn-ghost btn-lg" href="#/storage">${icon("folder")} Хранилище</a>
+        <div class="hero-inner">
+          <pre class="ascii-logo">${ASCII_LOGO}</pre>
+          <p class="hero-tag">// ${escapeHtml(CFG.siteName)} · терминал-форум · посты = issues · хранилище = репозиторий</p>
+          <div class="boot-log" id="bootLog"></div>
+          <div class="hero-actions">
+            <button class="btn btn-primary btn-lg" id="heroNewPost">${icon("plus")} [ новый_пост ]</button>
+            <a class="btn btn-ghost btn-lg" href="#/storage">${icon("folder")} [ хранилище ]</a>
+          </div>
         </div>
       </section>
 
@@ -49,7 +53,7 @@
         <div class="chips" id="catChips"></div>
         <div class="search-box">
           ${icon("search")}
-          <input id="feedSearch" type="search" placeholder="Поиск по постам…" value="${escapeHtml(state.search)}" />
+          <input id="feedSearch" type="search" placeholder="grep постов…" value="${escapeHtml(state.search)}" />
         </div>
         <button class="btn btn-primary" id="feedNewPost">${icon("plus")} Написать</button>
       </div>
@@ -57,12 +61,20 @@
       <div id="feedList" class="post-list"></div>
       <div class="load-more" id="loadMoreWrap"></div>`;
 
+    bootType(app.querySelector("#bootLog"), [
+      '<span class="dim">$</span> <span class="cyan">init aurora://forum</span>',
+      '<span class="dim">…</span> подключение к <span class="cyan">api.github.com</span> <span class="ok">[ok]</span>',
+      '<span class="dim">…</span> загрузка каналов <span class="ok">[ok]</span>',
+      '<span class="dim">…</span> проверка меток <span class="ok">[ok]</span>',
+      '<span class="dim">></span> <span class="mag">ждите, извлекаем данные…</span>'
+    ]);
+
     // чипы категорий
     const chips = app.querySelector("#catChips");
     const all = document.createElement("button");
     all.className = "chip" + (state.category === "all" ? " active" : "");
     all.dataset.cat = "all";
-    all.innerHTML = `<span class="dot" style="background:linear-gradient(120deg,#6366f1,#22d3ee)"></span>Все`;
+    all.innerHTML = `<span class="dot"></span>Все`;
     all.addEventListener("click", () => setCategory("all"));
     chips.appendChild(all);
     for (const cat of CFG.categories) {
@@ -163,15 +175,15 @@
       return;
     }
 
-    list.innerHTML = filtered.map(postCardHTML).join("");
+    list.innerHTML = filtered.map((p, i) => postCardHTML(p, i)).join("");
     wrap.innerHTML = state.hasMore ? `<button class="btn btn-ghost" id="loadMoreBtn">Показать ещё</button>` : "";
   }
 
-  function postCardHTML(p) {
+  function postCardHTML(p, i) {
     const cat = getCategory(p);
     const preview = escapeHtml(MD.stripMarkdown(p.body).slice(0, 220));
     return `
-      <article class="post-card" data-num="${p.number}">
+      <article class="post-card" data-num="${p.number}" style="--i:${i}">
         <div class="post-card-top">
           ${cat ? `<span class="cat-badge" style="background:${cat.color}">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
           ${p.state === "closed" ? `<span class="cat-badge" style="background:#6b7280">закрыт</span>` : ""}

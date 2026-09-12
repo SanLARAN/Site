@@ -35,6 +35,10 @@
     const app = document.getElementById("app");
     window.scrollTo(0, 0);
     updateNav(route.name);
+    // плавный переход страницы (Apple-стиль)
+    app.classList.remove("page-enter");
+    void app.offsetWidth; // перезапуск анимации
+    app.classList.add("page-enter");
 
     switch (route.name) {
       case "forum":
