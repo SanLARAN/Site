@@ -185,6 +185,7 @@
                 <span class="muted">@${escapeHtml(login)}</span>
                 <span class="nb" data-user="${escapeHtml(login)}"></span>
               </div>
+              <a class="profile-hero-ghlink" href="${escapeHtml(u.html_url)}" target="_blank" rel="noopener">${icon("github")} github.com/${escapeHtml(login)}</a>
               <div class="points-badge hero" id="pointsBadge">${icon("star")} ${prof.points || 0} очков</div>
               <div class="profile-stats">
                 <div class="stat"><b>${posts.length}</b><span>${window.UI.ruPlural(posts.length, "пост", "поста", "постов")}</span></div>

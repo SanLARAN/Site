@@ -33,6 +33,10 @@
       <div class="admin-grid">
         <section class="card admin-section" id="admStats"><div class="loading-row"><div class="spinner"></div></div></section>
         <section class="card admin-section">
+          <h3>${icon("star")} Очки пользователей</h3>
+          <div id="admPoints"><div class="loading-row"><div class="spinner"></div></div></div>
+        </section>
+        <section class="card admin-section">
           <h3>${icon("chat")} Модерация постов</h3>
           <div id="admPosts"><div class="loading-row"><div class="spinner"></div></div></div>
         </section>
@@ -43,6 +47,7 @@
       </div>`;
 
     loadStats();
+    loadPoints();
     loadPosts();
     loadStorage();
   }
@@ -78,6 +83,79 @@
         <div class="stat-card"><b>${pinned}</b><span>закреплено</span></div>
         <div class="stat-card"><b>${rate ? rate.remaining : "—"}</b><span>API-запросов осталось</span></div>
       </div>`;
+  }
+
+  /* ============================================================
+   *  ОЧКИ ПОЛЬЗОВАТЕЛЕЙ
+   * ============================================================ */
+  async function loadPoints() {
+    const el = document.getElementById("admPoints");
+    try {
+      const r = await GH.request("GET", `/repos/${CFG.owner}/${CFG.repo}/git/trees/${encodeURIComponent(CFG.branch)}?recursive=1`);
+      const blobs = (r.body.tree || []).filter((t) => t.type === "blob" && t.path.startsWith(GH.PROFILES_DIR + "/") && t.path.endsWith(".json"));
+      const logins = blobs.map((b) => b.path.split("/").pop().replace(/\.json$/, "")).filter(Boolean);
+      const rows = [];
+      for (const login of logins) {
+        try {
+          const p = await GH.getProfile(login);
+          rows.push({ login, points: p.points || 0 });
+        } catch (e) { rows.push({ login, points: 0 }); }
+      }
+      rows.sort((a, b) => a.login.localeCompare(b.login, "ru"));
+
+      el.innerHTML = `
+        <div class="grant-form">
+          <input class="input" id="grantLogin" placeholder="github-логин" autocomplete="off" />
+          <input class="input" id="grantAmount" type="number" placeholder="± очки" value="100" style="width:110px;" />
+          <button class="btn btn-primary btn-sm" id="grantBtn">${icon("star")} Выдать</button>
+        </div>
+        <div class="admin-wrap" style="margin-top:12px;">
+          <table class="adm-table">
+            <thead><tr><th>Пользователь</th><th>Очки</th><th>Выдать/списать</th></tr></thead>
+            <tbody>
+              ${rows.map((row) => `
+                <tr>
+                  <td>@${escapeHtml(row.login)}</td>
+                  <td><b>${row.points}</b></td>
+                  <td>
+                    <div class="grant-row" data-login="${escapeHtml(row.login)}">
+                      <input class="input grant-inline" type="number" placeholder="±" value="100" />
+                      <button class="btn btn-primary btn-sm" data-grant>${icon("star")} ОК</button>
+                    </div>
+                  </td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+          ${rows.length ? "" : `<div class="state-box" style="padding:20px;"><p>Пока нет профилей с очками.</p></div>`}
+        </div>`;
+
+      el.querySelector("#grantBtn").addEventListener("click", async () => {
+        const login = el.querySelector("#grantLogin").value.trim();
+        const amt = parseInt(el.querySelector("#grantAmount").value, 10);
+        if (!login) { toast("Введите логин пользователя.", "info"); return; }
+        if (!amt) { toast("Введите количество очков.", "info"); return; }
+        await grantPoints(login, amt);
+      });
+      el.querySelectorAll("[data-grant]").forEach((b) => {
+        b.addEventListener("click", async () => {
+          const row = b.closest(".grant-row");
+          const login = row.dataset.login;
+          const amt = parseInt(row.querySelector(".grant-inline").value, 10);
+          if (!amt) { toast("Введите количество очков.", "info"); return; }
+          await grantPoints(login, amt);
+        });
+      });
+    } catch (e) {
+      el.innerHTML = `<p class="error-text">${escapeHtml(e.message)}</p>`;
+    }
+  }
+
+  async function grantPoints(login, amount) {
+    try {
+      await GH.earnPoints(login, amount);
+      toast(`@${login}: ${amount > 0 ? "+" : ""}${amount} очков.`, "success");
+      loadPoints();
+    } catch (e) { toast(e.message, "error"); }
   }
 
   /* ============================================================
