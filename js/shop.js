@@ -1,6 +1,7 @@
 /* ============================================================
  *  Магазин: рамки аватарок и значки за очки.
- *  Ассортимент пополняет администратор (CFG.admin).
+ *  Товары — картинки (PNG/SVG/GIF), которые добавляет
+ *  администратор (CFG.admin) через интерфейс.
  * ============================================================ */
 (function () {
   "use strict";
@@ -8,6 +9,8 @@
   const { icon, toast, escapeHtml, confirmModal } = window.UI;
   const CFG = window.FORUM_CONFIG;
   const { ProfileCache, ShopCache, equipItem } = window.PROFILES;
+
+  const IMG_ACCEPT = ".png,.svg,.gif,.webp,.jpg,.jpeg";
 
   function isAdmin() {
     return window.ADMIN && window.ADMIN.isAdmin && window.ADMIN.isAdmin();
@@ -43,12 +46,16 @@
 
       <section class="card admin-section">
         <h3>${icon("palette")} Рамки аватарки</h3>
-        <div class="items-grid" id="framesGrid">${shop.frames.map((f) => shopItem(f, "frame", prof)).join("")}</div>
+        <div class="items-grid" id="framesGrid">
+          ${shop.frames.length ? shop.frames.map((f) => shopItem(f, "frame", prof)).join("") : emptyHint("Пока нет рамок.")}
+        </div>
       </section>
 
       <section class="card admin-section" style="margin-top:14px;">
         <h3>${icon("star")} Значки у ника</h3>
-        <div class="items-grid" id="badgesGrid">${shop.badges.map((b) => shopItem(b, "badge", prof)).join("")}</div>
+        <div class="items-grid" id="badgesGrid">
+          ${shop.badges.length ? shop.badges.map((b) => shopItem(b, "badge", prof)).join("") : emptyHint("Пока нет значков.")}
+        </div>
       </section>
 
       <div class="auth-note" style="margin-top:14px;">
@@ -61,13 +68,19 @@
     if (addBtn) addBtn.addEventListener("click", () => renderAddForm());
   }
 
+  function emptyHint(text) {
+    return `<div class="state-box" style="padding:20px;grid-column:1/-1;"><p>${escapeHtml(text)}</p></div>`;
+  }
+
   function shopItem(item, kind, prof) {
     const owned = (prof.owned || []).includes(item.id);
     const equipped = prof.equipped && prof.equipped[kind] === item.id;
     const canBuy = (prof.points || 0) >= item.price;
+    const src = escapeHtml(GH.rawUrl(item.image));
+
     const preview = kind === "frame"
-      ? `<div class="item-preview"><span class="frame-preview" style="background:${escapeHtml(item.bg || "")};box-shadow:${escapeHtml(item.shadow || "")}"></span></div>`
-      : `<div class="item-preview"><span class="badge-preview" style="background:${escapeHtml(item.bg || "")};color:${escapeHtml(item.color || "")}">${escapeHtml(item.label || item.name)}</span></div>`;
+      ? `<div class="item-preview"><span class="frame-preview" style="background-image:url('${src}')"></span></div>`
+      : `<div class="item-preview"><img class="badge-preview-img" src="${src}" alt="" loading="lazy" /></div>`;
 
     let actionBtn;
     if (owned) {
@@ -89,13 +102,9 @@
   }
 
   function bindItemActions(app, login, prof) {
-    // покупка
     app.querySelectorAll("[data-buy]").forEach((b) => b.addEventListener("click", () => {
-      const id = b.dataset.buy;
-      const kind = b.dataset.kind;
-      buyItem(login, kind, id);
+      buyItem(login, b.dataset.kind, b.dataset.buy);
     }));
-    // надеть/снять
     app.querySelectorAll("[data-equip]").forEach((b) => b.addEventListener("click", async () => {
       const id = b.dataset.equip;
       const kind = b.dataset.kind;
@@ -104,7 +113,6 @@
       if (ok) { toast(on ? "Надето." : "Снято.", "success"); renderShop(); }
       else toast("Не удалось сохранить.", "error");
     }));
-    // удаление (админ)
     app.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => {
       deleteItem(b.dataset.kind, b.dataset.del);
     }));
@@ -135,7 +143,7 @@
     } catch (e) { toast(e.message, "error"); }
   }
 
-  /* ---------- админ: добавление и удаление товаров ---------- */
+  /* ---------- админ: добавление товара (картинка) ---------- */
   function renderAddForm() {
     const root = document.getElementById("modal-root");
     const backdrop = document.createElement("div");
@@ -152,17 +160,13 @@
         </div>
         <div class="field"><label>Название</label><input class="input" id="itemName" placeholder="Например: Неон" /></div>
         <div class="field"><label>Цена (очки)</label><input class="input" id="itemPrice" type="number" min="1" value="100" /></div>
-
-        <div id="frameFields">
-          <div class="field"><label>CSS-градиент рамки (background)</label><textarea class="textarea" id="itemBg" rows="2" placeholder="conic-gradient(from 180deg, #22d3ee, #a855f7, #f472b6, #22d3ee)"></textarea></div>
-          <div class="field"><label>Свечение (box-shadow)</label><input class="input" id="itemShadow" placeholder="0 0 14px rgba(168,85,247,0.55)" /></div>
+        <div class="field">
+          <label>Картинка (PNG / SVG / GIF)</label>
+          <label class="btn btn-ghost btn-sm" id="fileBtn" style="justify-content:center;">${icon("image")} Выбрать файл</label>
+          <input type="file" id="itemFile" accept="${IMG_ACCEPT}" class="hidden" />
+          <div class="hint" id="fileHint">Файл не выбран</div>
+          <div id="filePreview" style="margin-top:8px;"></div>
         </div>
-        <div id="badgeFields" class="hidden">
-          <div class="field"><label>Текст/эмодзи</label><input class="input" id="itemLabel" placeholder="★ или DEV" maxlength="6" /></div>
-          <div class="field"><label>Цвет текста</label><input class="input" id="itemColor" placeholder="#ffffff" /></div>
-          <div class="field"><label>Цвет фона</label><input class="input" id="itemBg2" placeholder="#ffd84d" /></div>
-        </div>
-
         <div class="modal-actions">
           <button class="btn btn-ghost" data-act="cancel">Отмена</button>
           <button class="btn btn-primary" data-act="save">Добавить</button>
@@ -170,58 +174,89 @@
       </div>`;
     root.appendChild(backdrop);
 
-    const typeSel = backdrop.querySelector("#itemType");
-    const toggleFields = () => {
-      const isFrame = typeSel.value === "frame";
-      backdrop.querySelector("#frameFields").classList.toggle("hidden", !isFrame);
-      backdrop.querySelector("#badgeFields").classList.toggle("hidden", isFrame);
-    };
-    typeSel.addEventListener("change", toggleFields);
-    toggleFields();
+    let file = null;
+    const fileInput = backdrop.querySelector("#itemFile");
+    backdrop.querySelector("#fileBtn").addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", () => {
+      file = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
+      const hint = backdrop.querySelector("#fileHint");
+      const prev = backdrop.querySelector("#filePreview");
+      if (file) {
+        hint.textContent = file.name + " · " + Math.round(file.size / 1024) + " КБ";
+        if (file.type === "image/svg+xml") {
+          prev.innerHTML = ""; // svg превью не делаем
+        } else {
+          const url = URL.createObjectURL(file);
+          prev.innerHTML = `<img src="${url}" style="max-height:60px;border-radius:6px;border:1px solid var(--border);" />`;
+        }
+      } else {
+        hint.textContent = "Файл не выбран";
+        prev.innerHTML = "";
+      }
+    });
 
     const cleanup = () => backdrop.remove();
     backdrop.querySelector('[data-act="cancel"]').addEventListener("click", cleanup);
     backdrop.addEventListener("click", (e) => { if (e.target === backdrop) cleanup(); });
     backdrop.querySelector('[data-act="save"]').addEventListener("click", async () => {
-      const type = typeSel.value;
+      const type = backdrop.querySelector("#itemType").value;
       const name = backdrop.querySelector("#itemName").value.trim();
       const price = parseInt(backdrop.querySelector("#itemPrice").value, 10);
       if (!name || !price) { toast("Укажите название и цену.", "error"); return; }
+      if (!file) { toast("Выберите картинку товара.", "error"); return; }
+      const m = file.name.match(/\.(png|svg|gif|webp|jpe?g)$/i);
+      if (!m) { toast("Поддерживаются PNG, SVG, GIF, WebP, JPG.", "error"); return; }
+      const ext = m[1].toLowerCase() === "jpeg" ? "jpg" : m[1].toLowerCase();
       const id = (type === "frame" ? "f_" : "b_") + Date.now().toString(36);
-      let item;
-      if (type === "frame") {
-        item = { id, name, price, icon: "💠", bg: backdrop.querySelector("#itemBg").value.trim(), shadow: backdrop.querySelector("#itemShadow").value.trim() };
-      } else {
-        item = {
-          id, name, price,
-          icon: backdrop.querySelector("#itemLabel").value.trim() || "★",
-          label: backdrop.querySelector("#itemLabel").value.trim() || "★",
-          color: backdrop.querySelector("#itemColor").value.trim() || "#ffffff",
-          bg: backdrop.querySelector("#itemBg2").value.trim() || "#555555"
-        };
-      }
+      const path = `data/shop/${type}s/${id}.${ext}`;
+
+      const saveBtn = backdrop.querySelector('[data-act="save"]');
+      saveBtn.disabled = true; saveBtn.textContent = "Загрузка…";
       try {
+        const base64 = await readFileBase64(file);
+        await GH.putRawFile(path, base64, `Магазин: добавить ${type} «${name}»`, null);
         const raw = await ShopCache.getRaw();
         const shop = JSON.parse(JSON.stringify(raw.data));
+        const item = { id, name, price, image: path };
         if (type === "frame") shop.frames.push(item); else shop.badges.push(item);
         await GH.saveShop(shop, raw.sha);
         ShopCache.invalidate();
         toast("Товар добавлен.", "success");
         cleanup();
         renderShop();
-      } catch (e) { toast(e.message, "error"); }
+      } catch (e) {
+        toast(e.message, "error");
+        saveBtn.disabled = false; saveBtn.textContent = "Добавить";
+      }
+    });
+  }
+
+  function readFileBase64(file) {
+    return new Promise((resolve, reject) => {
+      const r = new FileReader();
+      r.onload = () => { const i = r.result.indexOf(","); resolve(r.result.slice(i + 1)); };
+      r.onerror = () => reject(new Error("Не удалось прочитать файл"));
+      r.readAsDataURL(file);
     });
   }
 
   async function deleteItem(kind, id) {
-    const ok = await confirmModal({ title: "Удалить товар?", message: "Товар исчезнет из магазина.", confirmText: "Удалить", danger: true });
+    const ok = await confirmModal({ title: "Удалить товар?", message: "Товар и его картинка будут удалены из магазина.", confirmText: "Удалить", danger: true });
     if (!ok) return;
     try {
       const raw = await ShopCache.getRaw();
       const shop = JSON.parse(JSON.stringify(raw.data));
       const list = kind === "frame" ? shop.frames : shop.badges;
+      const item = list.find((i) => i.id === id);
       shop[kind === "frame" ? "frames" : "badges"] = list.filter((i) => i.id !== id);
       await GH.saveShop(shop, raw.sha);
+      // удаляем картинку товара
+      if (item && item.image) {
+        try {
+          const { body } = await GH.request("GET", `/repos/${CFG.owner}/${CFG.repo}/contents/${GH.encodePath(item.image)}?ref=${encodeURIComponent(CFG.branch)}`);
+          await GH.deletePath(item.image, body.sha, "Магазин: удалить товар");
+        } catch (e) {}
+      }
       ShopCache.invalidate();
       toast("Товар удалён.", "success");
       renderShop();

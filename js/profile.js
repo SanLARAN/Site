@@ -72,23 +72,37 @@
 
       root.querySelectorAll(".uframe[data-user]").forEach((el) => {
         if (el.getAttribute("data-user") !== login) return;
-        if (frame) {
+        if (frame && frame.image) {
           el.classList.add("has-frame");
-          el.style.background = frame.bg || "";
-          el.style.boxShadow = frame.shadow || "";
           el.title = frame.name;
+          let img = el.querySelector(".frame-img");
+          if (!img) {
+            img = document.createElement("img");
+            img.className = "frame-img";
+            img.alt = "";
+            el.appendChild(img);
+          }
+          img.src = GH.rawUrl(frame.image);
+        } else {
+          el.classList.remove("has-frame");
+          const img = el.querySelector(".frame-img");
+          if (img) img.remove();
         }
       });
       root.querySelectorAll(".nb[data-user]").forEach((el) => {
         if (el.getAttribute("data-user") !== login) return;
-        if (badge) {
+        if (badge && badge.image) {
           el.style.display = "inline-flex";
-          el.textContent = badge.label || "";
-          el.style.background = badge.bg || "";
-          el.style.color = badge.color || "";
           el.title = badge.name;
+          el.textContent = "";
+          const img = document.createElement("img");
+          img.className = "nb-img";
+          img.src = GH.rawUrl(badge.image);
+          img.alt = badge.name;
+          el.appendChild(img);
         } else {
           el.style.display = "none";
+          el.textContent = "";
         }
       });
       root.querySelectorAll(".uname[data-user]").forEach((el) => {
@@ -301,9 +315,10 @@
 
   function itemCard(item, kind, prof) {
     const equipped = prof.equipped && prof.equipped[kind] === item.id;
+    const src = escapeHtml(GH.rawUrl(item.image));
     const preview = kind === "frame"
-      ? `<div class="item-preview"><span class="frame-preview" style="background:${escapeHtml(item.bg || "")};box-shadow:${escapeHtml(item.shadow || "")}"></span></div>`
-      : `<div class="item-preview"><span class="badge-preview" style="background:${escapeHtml(item.bg || "")};color:${escapeHtml(item.color || "")}">${escapeHtml(item.label || item.name)}</span></div>`;
+      ? `<div class="item-preview"><span class="frame-preview" style="background-image:url('${src}')"></span></div>`
+      : `<div class="item-preview"><img class="badge-preview-img" src="${src}" alt="" loading="lazy" /></div>`;
     return `
       <div class="card item-card">
         ${preview}

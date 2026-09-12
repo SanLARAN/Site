@@ -231,18 +231,8 @@
   const SHOP_PATH = "data/shop.json";
 
   const DEFAULT_SHOP = {
-    frames: [
-      { id: "f_neon", name: "Неон", price: 120, icon: "💠", bg: "conic-gradient(from 180deg, #22d3ee, #a855f7, #f472b6, #22d3ee)", shadow: "0 0 14px rgba(168,85,247,0.55)" },
-      { id: "f_gold", name: "Золото", price: 250, icon: "🥇", bg: "conic-gradient(from 0deg, #fbbf24, #f59e0b, #fde68a, #fbbf24)", shadow: "0 0 14px rgba(251,191,36,0.55)" },
-      { id: "f_rgb", name: "RGB", price: 400, icon: "🌈", bg: "conic-gradient(from 0deg, #ff4d4d, #ffd84d, #4dff88, #4dd2ff, #b84dff, #ff4d4d)", shadow: "0 0 16px rgba(255,255,255,0.5)" },
-      { id: "f_glitch", name: "Глитч", price: 180, icon: "⚡", bg: "linear-gradient(120deg, #ffffff, #888888, #ffffff)", shadow: "0 0 10px rgba(255,255,255,0.7)" }
-    ],
-    badges: [
-      { id: "b_star", name: "Звезда", price: 80, icon: "★", label: "★", color: "#0b0b0b", bg: "#ffd84d" },
-      { id: "b_flame", name: "Огонь", price: 150, icon: "🔥", label: "🔥", color: "#ffffff", bg: "#e11d48" },
-      { id: "b_crown", name: "Корона", price: 500, icon: "👑", label: "👑", color: "#7a4d00", bg: "#ffd700" },
-      { id: "b_dev", name: "DEV", price: 200, icon: "DEV", label: "DEV", color: "#ffffff", bg: "#0a0a0a" }
-    ]
+    frames: [],
+    badges: []
   };
 
   function b64decode(str) {
