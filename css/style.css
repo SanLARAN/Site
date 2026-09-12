@@ -820,6 +820,76 @@ html[data-theme="light"] .glitch::after { color: rgba(90,90,90,0.85); }
 }
 
 /* ============================================================
+   ASCII-ПЕРЕХОД МЕЖДУ СТРАНИЦАМИ
+   ============================================================ */
+.page-transition {
+  position: fixed; inset: 0; z-index: 400;
+  display: grid; place-items: center;
+  background: var(--bg);
+  opacity: 0;
+  animation: ptIn 0.12s var(--ease-out) forwards;
+}
+.page-transition.done { animation: ptOut 0.26s ease-in forwards; }
+.pt-box { text-align: center; font-family: var(--font-mono); color: var(--text); padding: 20px; }
+.pt-art {
+  font-size: 11px; line-height: 1.22; white-space: pre;
+  min-height: 7em; margin: 0 0 20px; color: var(--text);
+}
+.pt-status { font-size: 13px; color: var(--text-2); min-height: 1.2em; }
+.pt-status::after { content: "▌"; color: var(--text); animation: caretBlink 0.8s steps(1) infinite; }
+.pt-bar {
+  width: 240px; height: 3px; margin: 16px auto 0;
+  background: var(--surface-2); border: 1px solid var(--border);
+  border-radius: 2px; overflow: hidden;
+}
+.pt-bar span { display: block; height: 100%; width: 0; background: var(--text); animation: ptBar 0.55s var(--ease-out) forwards; }
+
+/* ============================================================
+   ASCII-ВЗРЫВ ЛАЙКА
+   ============================================================ */
+.like-burst { position: fixed; z-index: 150; pointer-events: none; }
+.like-burst span {
+  position: absolute; left: 0; top: 0;
+  font-family: var(--font-mono); font-size: 15px; font-weight: 800;
+  color: var(--text); text-shadow: 0 0 8px var(--glow);
+  animation: likeFloat 0.9s var(--ease-out) forwards;
+}
+
+/* ============================================================
+   АДМИН-ПАНЕЛЬ
+   ============================================================ */
+.admin-head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+.admin-head h2 { margin: 0; font-size: 20px; font-weight: 800; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; }
+.admin-head h2 .ic { width: 20px; height: 20px; }
+.admin-head h2 .ic path, .admin-head h2 .ic rect { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.admin-grid { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.admin-section { padding: 20px 22px; }
+.admin-section h3 { margin: 0 0 14px; font-size: 15px; font-family: var(--font-mono); display: flex; align-items: center; gap: 8px; }
+.admin-section h3 .ic { width: 16px; height: 16px; }
+.admin-section h3 .ic path, .admin-section h3 .ic circle, .admin-section h3 .ic rect { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.stat-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.stat-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
+.stat-card b { display: block; font-size: 20px; font-family: var(--font-mono); color: var(--text); }
+.stat-card span { font-size: 11.5px; color: var(--text-3); font-family: var(--font-mono); }
+.admin-wrap { overflow-x: auto; }
+.adm-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+.adm-table th, .adm-table td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+.adm-table th { color: var(--text-3); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; font-family: var(--font-mono); }
+.adm-table tr:hover td { background: var(--surface-hover); }
+.adm-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.adm-actions .icon-btn { width: 30px; height: 30px; }
+.adm-actions .icon-btn .ic { width: 14px; height: 14px; }
+.adm-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 700;
+  font-family: var(--font-mono); border: 1px solid var(--border-strong); color: var(--text-2);
+}
+.adm-badge .ic { width: 11px; height: 11px; }
+.adm-badge .ic path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.adm-badge.on { color: var(--invert); background: var(--accent); border-color: var(--accent); }
+.cat-badge.pinned { background: var(--accent); color: var(--invert); }
+
+/* ============================================================
    АНИМАЦИИ
    ============================================================ */
 @keyframes spin { to { transform: rotate(360deg); } }
@@ -829,6 +899,13 @@ html[data-theme="light"] .glitch::after { color: rgba(90,90,90,0.85); }
   100% { transform: rotate(360deg); }
 }
 @keyframes caretBlink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+@keyframes ptIn { to { opacity: 1; } }
+@keyframes ptOut { to { opacity: 0; } }
+@keyframes ptBar { from { width: 0; } to { width: 100%; } }
+@keyframes likeFloat {
+  0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--dx)), calc(-50% - 74px)) scale(0.3) rotate(var(--rot)); opacity: 0; }
+}
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes pageIn {
   from { opacity: 0; transform: translateY(14px); }

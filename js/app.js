@@ -40,6 +40,9 @@
     void app.offsetWidth; // перезапуск анимации
     app.classList.add("page-enter");
 
+    // ASCII-переход между страницами
+    UI.startPageTransition(route.name);
+
     switch (route.name) {
       case "forum":
         FORUM.renderFeed();
@@ -62,6 +65,9 @@
         break;
       case "profile":
         renderProfile();
+        break;
+      case "admin":
+        ADMIN.renderAdmin();
         break;
       default:
         location.hash = "#/forum";

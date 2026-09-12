@@ -159,6 +159,14 @@
     return request("DELETE", `/repos/${CFG.owner}/${CFG.repo}/issues/comments/${commentId}`);
   }
 
+  /* ---------- блокировка обсуждения ---------- */
+  function lockIssue(number, reason) {
+    return request("PUT", `/repos/${CFG.owner}/${CFG.repo}/issues/${number}/lock`, { json: { lock_reason: reason || "resolved" } });
+  }
+  function unlockIssue(number) {
+    return request("DELETE", `/repos/${CFG.owner}/${CFG.repo}/issues/${number}/lock`);
+  }
+
   /* ---------- реакции ---------- */
   function listReactions(number) {
     return request("GET", `/repos/${CFG.owner}/${CFG.repo}/issues/${number}/reactions?per_page=100`);
@@ -242,6 +250,7 @@
     fetchUser,
     listIssues, getIssue, createIssue, updateIssue, closeIssue, reopenIssue,
     listComments, createComment, updateComment, deleteComment,
+    lockIssue, unlockIssue,
     listReactions, addReaction, deleteReaction,
     listLabels, createLabel,
     contentPath, listDir, getFileMeta, putFile, putFileUpdate, deleteFile, createFolder,

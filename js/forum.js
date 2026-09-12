@@ -30,6 +30,10 @@
     return GH.isLoggedIn() && issue.user && issue.user.login === GH.getUser().login;
   }
 
+  function isPinned(issue) {
+    return (issue.labels || []).some((l) => l.name === CFG.pinLabel);
+  }
+
   /* ============================================================
    *  ЛЕНТА
    * ============================================================ */
@@ -165,6 +169,9 @@
       return true;
     });
 
+    // закреплённые посты — сверху
+    filtered.sort((a, b) => (isPinned(b) ? 1 : 0) - (isPinned(a) ? 1 : 0));
+
     if (!filtered.length) {
       list.innerHTML = state.search || state.category !== "all"
         ? `<div class="state-box">${icon("search", "big-ic")}<h3>Ничего не найдено</h3><p>Попробуйте другой запрос или категорию.</p></div>`
@@ -185,6 +192,7 @@
     return `
       <article class="post-card" data-num="${p.number}" style="--i:${i}">
         <div class="post-card-top">
+          ${isPinned(p) ? `<span class="cat-badge pinned">${icon("pin")} закреплено</span>` : ""}
           ${cat ? `<span class="cat-badge" style="background:${cat.color}">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
           ${p.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}
         </div>
@@ -235,6 +243,7 @@
           <div class="post-article-header">
             ${cat ? `<span class="cat-badge" style="background:${cat.color}">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
             ${issue.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}
+            ${isPinned(issue) ? `<span class="cat-badge pinned">${icon("pin")} закреплено</span>` : ""}
             <h1>${escapeHtml(issue.title)}</h1>
             <div class="byline">
               ${avatar(issue.user, 80)}
@@ -313,6 +322,7 @@
       } else {
         await GH.addReaction(issue.number, "+1");
         btn.classList.add("liked");
+        UI.asciiBurst(btn);
       }
       loadReactions(issue);
     } catch (e) {

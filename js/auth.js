@@ -32,6 +32,7 @@
             <button class="dropdown-item" data-act="profile">${icon("user")} Профиль</button>
             <button class="dropdown-item" data-act="newpost">${icon("plus")} Новый пост</button>
             <button class="dropdown-item" data-act="storage">${icon("folder")} Моё хранилище</button>
+            ${window.ADMIN && window.ADMIN.isAdmin() ? `<button class="dropdown-item" data-act="admin">${icon("shield")} Админ-панель</button>` : ""}
             <div class="dropdown-sep"></div>
             <a class="dropdown-item" href="${escapeHtml(u.html_url)}" target="_blank" rel="noopener">${icon("github")} GitHub профиль</a>
             <button class="dropdown-item danger" data-act="logout">${icon("logout")} Выйти</button>
@@ -53,6 +54,7 @@
         else if (act === "profile") location.hash = "#/profile";
         else if (act === "newpost") location.hash = "#/new";
         else if (act === "storage") location.hash = "#/storage";
+        else if (act === "admin") location.hash = "#/admin";
       }));
     } else {
       slot.innerHTML = `

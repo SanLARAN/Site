@@ -41,7 +41,11 @@
     refresh: '<path d="M21 12a9 9 0 1 1-2.6-6.4M21 3v6h-6"/>',
     dots: '<circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/>',
     github: '<path fill="currentColor" stroke="none" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.11.79-.25.79-.56 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.25 3.34.95.1-.74.4-1.25.72-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.18-3.09-.12-.29-.51-1.46.11-3.04 0 0 .96-.31 3.15 1.18a10.9 10.9 0 0 1 5.74 0c2.19-1.49 3.15-1.18 3.15-1.18.62 1.58.23 2.75.11 3.04.74.81 1.18 1.83 1.18 3.09 0 4.42-2.7 5.39-5.27 5.68.41.36.78 1.06.78 2.14 0 1.54-.01 2.78-.01 3.16 0 .31.21.68.8.56A11.52 11.52 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>',
-    pin: '<path d="M12 17v5M7 12h10M9 12V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7M8 22h8"/>'
+    pin: '<path d="M12 17v5M7 12h10M9 12V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v7M8 22h8"/>',
+    shield: '<path d="M12 3l7 3v5c0 4.6-3 8-7 10-4-2-7-5.4-7-10V6Z"/>',
+    lock: '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+    unlock: '<rect x="5" y="11" width="14" height="9" rx="1.5"/><path d="M8 11V8a4 4 0 0 1 7.6-1.6"/>',
+    terminal: '<rect x="3" y="4" width="18" height="16" rx="2"/><path d="m7 9 3 3-3 3M13 15h4"/>'
   };
 
   function icon(name, cls) {
@@ -167,5 +171,130 @@
     })();
   }
 
-  window.UI = { ICONS, ASCII_LOGO, icon, bootType, toast, confirmModal, timeAgo, formatDate, formatBytes, escapeHtml: escapeHtmlSafe, ruPlural };
+  /* ---------- ASCII-баннеры маршрутов (переходы между страницами) ---------- */
+  const ROUTE_BANNERS = {
+    forum: [
+      "   ___  __  _____  ____  ___  ___ ",
+      "  / _ |/ / / / _ \\/ __ \\/ _ \\/ _ |",
+      " / __ / /_/ / , _/ /_/ / , _/ __ |",
+      "/_/ |_\\____/_/|_|\\____/_/|_/_/ |_|",
+      "                                    "
+    ].join("\n"),
+    post: [
+      "   ___  ____  __________",
+      "  / _ \\/ __ \\/ __/_  __/",
+      " / ___/ /_/ /\\ \\  / /   ",
+      "/_/   \\____/___/ /_/    ",
+      "                        "
+    ].join("\n"),
+    new: [
+      "   _  _______      __",
+      "  / |/ / __/ | /| / /",
+      " /    / _/ | |/ |/ / ",
+      "/_/|_/___/ |__/|__/  ",
+      "                     "
+    ].join("\n"),
+    storage: [
+      "   ______________  ___  ___  _________",
+      "  / __/_  __/ __ \\/ _ \\/ _ |/ ___/ __/",
+      " _\\ \\  / / / /_/ / , _/ __ / (_ / _/  ",
+      "/___/ /_/  \\____/_/|_/_/ |_\\___/___/  ",
+      "                                      "
+    ].join("\n"),
+    login: [
+      "   __   ____  __________  __",
+      "  / /  / __ \\/ ___/  _/ |/ /",
+      " / /__/ /_/ / (_ // //    / ",
+      "/____/\\____/\\___/___/_/|_/  ",
+      "                            "
+    ].join("\n"),
+    profile: [
+      "   ___  ___  ____  __________   ____",
+      "  / _ \\/ _ \\/ __ \\/ __/  _/ /  / __/",
+      " / ___/ , _/ /_/ / _/_/ // /__/ _/  ",
+      "/_/  /_/|_|\\____/_/ /___/____/___/  ",
+      "                                    "
+    ].join("\n"),
+    admin: [
+      "   ___   ___  __  ________  __",
+      "  / _ | / _ \\/  |/  /  _/ |/ /",
+      " / __ |/ // / /|_/ // //    / ",
+      "/_/ |_/____/_/  /_/___/_/|_/  ",
+      "                              "
+    ].join("\n")
+  };
+
+  // полноэкранный ASCII-переход между страницами
+  function startPageTransition(routeName) {
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    } catch (e) {}
+    const banner = ROUTE_BANNERS[routeName] || ROUTE_BANNERS.forum;
+    const lines = banner.split("\n");
+
+    // убираем предыдущий оверлей
+    document.querySelectorAll(".page-transition").forEach((el) => el.remove());
+
+    const ov = document.createElement("div");
+    ov.className = "page-transition";
+    ov.setAttribute("aria-hidden", "true");
+    ov.innerHTML = `
+      <div class="pt-box">
+        <pre class="pt-art"></pre>
+        <div class="pt-status"></div>
+        <div class="pt-bar"><span></span></div>
+      </div>`;
+    document.body.appendChild(ov);
+
+    const art = ov.querySelector(".pt-art");
+    const status = ov.querySelector(".pt-status");
+
+    // печать ASCII построчно
+    lines.forEach((ln, i) => {
+      setTimeout(() => {
+        art.textContent += (art.textContent ? "\n" : "") + ln;
+      }, 55 * i);
+    });
+
+    // печать статусной строки
+    const msg = "> linking route //" + routeName + " … ok";
+    let ci = 0;
+    const typeTimer = setInterval(() => {
+      status.textContent = msg.slice(0, ci++);
+      if (ci > msg.length) clearInterval(typeTimer);
+    }, 16);
+
+    // скрытие оверлея
+    const total = Math.max(460, lines.length * 55 + 420);
+    setTimeout(() => {
+      ov.classList.add("done");
+      setTimeout(() => ov.remove(), 260);
+    }, total);
+  }
+
+  // ASCII-взрыв возле кнопки лайка
+  function asciiBurst(anchor) {
+    if (!anchor) return;
+    try {
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    } catch (e) {}
+    const rect = anchor.getBoundingClientRect();
+    const layer = document.createElement("div");
+    layer.className = "like-burst";
+    layer.style.left = (rect.left + rect.width / 2) + "px";
+    layer.style.top = (rect.top + rect.height / 2) + "px";
+    const chars = ["+1", "♥", "★", "✓", "OK", "+", "1"];
+    for (let i = 0; i < 14; i++) {
+      const s = document.createElement("span");
+      s.textContent = chars[Math.floor(Math.random() * chars.length)];
+      s.style.setProperty("--dx", (Math.random() * 96 - 48).toFixed(0) + "px");
+      s.style.setProperty("--rot", (Math.random() * 70 - 35).toFixed(0) + "deg");
+      s.style.animationDelay = (Math.random() * 0.14).toFixed(2) + "s";
+      layer.appendChild(s);
+    }
+    document.body.appendChild(layer);
+    setTimeout(() => layer.remove(), 1200);
+  }
+
+  window.UI = { ICONS, ASCII_LOGO, ROUTE_BANNERS, icon, bootType, startPageTransition, asciiBurst, toast, confirmModal, timeAgo, formatDate, formatBytes, escapeHtml: escapeHtmlSafe, ruPlural };
 })();
