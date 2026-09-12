@@ -184,6 +184,7 @@
 
     list.innerHTML = filtered.map((p, i) => postCardHTML(p, i)).join("");
     wrap.innerHTML = state.hasMore ? `<button class="btn btn-ghost" id="loadMoreBtn">Показать ещё</button>` : "";
+    decorate(list);
   }
 
   function postCardHTML(p, i) {
@@ -199,7 +200,7 @@
         <h2 class="post-card-title">${escapeHtml(p.title)}</h2>
         ${preview ? `<p class="post-card-preview">${preview}</p>` : ""}
         <div class="post-card-meta">
-          <span class="post-author">${avatar(p.user)}${escapeHtml(p.user ? p.user.login : "unknown")}</span>
+          <span class="post-author">${avatar(p.user)}${uname(p.user)}${nbadge(p.user)}</span>
           <span class="item">${icon("refresh")}${timeAgo(p.created_at)}</span>
           <span class="item">${icon("comment")}${p.comments}</span>
         </div>
@@ -209,7 +210,22 @@
   function avatar(user, size) {
     size = size || 64;
     if (!user) return "";
-    return `<img src="${escapeHtml(user.avatar_url + "&s=" + size)}" alt="" loading="lazy" width="${size / 2.5}" height="${size / 2.5}" />`;
+    const px = Math.round(size / 2.5);
+    return `<span class="uframe" data-user="${escapeHtml(user.login)}"><img class="gh-avatar" src="${escapeHtml(user.avatar_url + "&s=" + size)}" alt="" loading="lazy" width="${px}" height="${px}" /></span>`;
+  }
+
+  function uname(user) {
+    if (!user) return "";
+    return `<span class="uname" data-user="${escapeHtml(user.login)}">${escapeHtml(user.login)}</span>`;
+  }
+
+  function nbadge(user) {
+    if (!user) return "";
+    return `<span class="nb" data-user="${escapeHtml(user.login)}"></span>`;
+  }
+
+  function decorate(scope) {
+    if (window.PROFILES && window.PROFILES.decorateUsers) window.PROFILES.decorateUsers(scope);
   }
 
   function errorBox(msg) {
@@ -247,7 +263,7 @@
             <h1>${escapeHtml(issue.title)}</h1>
             <div class="byline">
               ${avatar(issue.user, 80)}
-              <span>Автор: <a href="${escapeHtml(issue.user ? issue.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(issue.user ? issue.user.login : "unknown")}</a></span>
+              <span>Автор: <a class="uname" data-user="${escapeHtml(issue.user ? issue.user.login : "")}" href="${escapeHtml(issue.user ? issue.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(issue.user ? issue.user.login : "unknown")}</a>${nbadge(issue.user)}</span>
               <span>·</span>
               <span>${formatDate(issue.created_at)}</span>
             </div>
@@ -291,6 +307,7 @@
 
     loadComments(issue);
     renderCommentComposer(issue);
+    decorate(app);
   }
 
   async function loadReactions(issue) {
@@ -323,6 +340,13 @@
         await GH.addReaction(issue.number, "+1");
         btn.classList.add("liked");
         UI.asciiBurst(btn);
+        if (window.PROFILES) {
+          const me = GH.getUser().login;
+          window.PROFILES.earn(me, "like");
+          if (issue.user && issue.user.login && issue.user.login !== me) {
+            window.PROFILES.earn(issue.user.login, "receiveLike");
+          }
+        }
       }
       loadReactions(issue);
     } catch (e) {
@@ -349,6 +373,7 @@
       list.innerHTML = body.map(commentHTML).join("");
       list.querySelectorAll("[data-edit]").forEach((b) => b.addEventListener("click", () => editComment(b.dataset.edit)));
       list.querySelectorAll("[data-del]").forEach((b) => b.addEventListener("click", () => deleteCommentFlow(b.dataset.del)));
+      decorate(list);
     } catch (e) {
       list.innerHTML = errorBox(e.message);
     }
@@ -361,7 +386,7 @@
         <div class="comment-head">
           ${avatar(c.user, 80)}
           <div class="who">
-            <div><a href="${escapeHtml(c.user ? c.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(c.user ? c.user.login : "unknown")}</a>${c.author_association === "OWNER" || c.author_association === "MEMBER" ? `<span class="badge-author">автор</span>` : ""}</div>
+            <div><a class="uname" data-user="${escapeHtml(c.user ? c.user.login : "")}" href="${escapeHtml(c.user ? c.user.html_url : "#")}" target="_blank" rel="noopener">${escapeHtml(c.user ? c.user.login : "unknown")}</a>${nbadge(c.user)}${c.author_association === "OWNER" || c.author_association === "MEMBER" ? `<span class="badge-author">автор</span>` : ""}</div>
             <span class="when">${formatDate(c.created_at)}</span>
           </div>
           ${mine ? `<div class="comment-actions">
@@ -409,7 +434,8 @@
       try {
         await GH.createComment(issue.number, val);
         ta.value = "";
-        toast("Комментарий опубликован.", "success");
+        if (window.PROFILES) window.PROFILES.earn(GH.getUser().login, "comment");
+        toast(`Комментарий опубликован! +${CFG.points.comment} очков`, "success");
         loadComments(issue);
       } catch (e) {
         toast(e.message, "error");
@@ -551,7 +577,8 @@
           location.hash = "#/post/" + existing.number;
         } else {
           const { body: created } = await GH.createIssue({ title, body, labels: [CFG.postsLabel, cat] });
-          toast("Пост опубликован!", "success");
+          if (window.PROFILES) window.PROFILES.earn(GH.getUser().login, "post");
+          toast(`Пост опубликован! +${CFG.points.post} очков`, "success");
           location.hash = "#/post/" + created.number;
         }
       } catch (err) {

@@ -28,8 +28,10 @@
             <div style="padding:10px 12px;border-bottom:1px solid var(--border);margin-bottom:6px;">
               <div style="font-weight:700;font-size:14px;">${escapeHtml(u.name || u.login)}</div>
               <div class="muted" style="font-size:12.5px;">@${escapeHtml(u.login)}</div>
+              <div class="dd-points" id="ddPoints">${icon("star")} …</div>
             </div>
             <button class="dropdown-item" data-act="profile">${icon("user")} Профиль</button>
+            <button class="dropdown-item" data-act="shop">${icon("cart")} Магазин</button>
             <button class="dropdown-item" data-act="newpost">${icon("plus")} Новый пост</button>
             <button class="dropdown-item" data-act="storage">${icon("folder")} Моё хранилище</button>
             ${window.ADMIN && window.ADMIN.isAdmin() ? `<button class="dropdown-item" data-act="admin">${icon("shield")} Админ-панель</button>` : ""}
@@ -52,10 +54,19 @@
         const act = b.getAttribute("data-act");
         if (act === "logout") logout();
         else if (act === "profile") location.hash = "#/profile";
+        else if (act === "shop") location.hash = "#/shop";
         else if (act === "newpost") location.hash = "#/new";
         else if (act === "storage") location.hash = "#/storage";
         else if (act === "admin") location.hash = "#/admin";
       }));
+
+      // подгружаем очки в меню
+      const ddPoints = slot.querySelector("#ddPoints");
+      if (ddPoints && window.PROFILES) {
+        window.PROFILES.ProfileCache.get(u.login).then((p) => {
+          ddPoints.innerHTML = `${icon("star")} ${p.points || 0} очков`;
+        }).catch(() => { ddPoints.innerHTML = `${icon("star")} —`; });
+      }
     } else {
       slot.innerHTML = `
         <button class="btn btn-primary login-btn" id="loginBtn">

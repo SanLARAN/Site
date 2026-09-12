@@ -727,6 +727,62 @@ html[data-theme="light"] .md-content pre code { color: #0a0a0a; }
 .profile-actions { margin-top: 18px; display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ============================================================
+   КАСТОМИЗАЦИЯ: рамки, значки, баннер, очки, магазин
+   ============================================================ */
+.uframe { display: inline-flex; border-radius: 50%; padding: 0; vertical-align: middle; line-height: 0; }
+.uframe.has-frame { padding: 3px; }
+.uframe img.gh-avatar { display: block; }
+.nb { display: none; margin-left: 6px; padding: 0 7px; border-radius: 999px; font-size: 10.5px; font-weight: 800; line-height: 1.8; vertical-align: middle; font-family: var(--font-mono); }
+.uname { transition: color 0.2s; }
+.dd-points { display: flex; align-items: center; gap: 6px; margin-top: 6px; font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--text); }
+.dd-points .ic { width: 13px; height: 13px; }
+.dd-points .ic path { fill: currentColor; stroke: none; }
+
+.points-badge { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 999px; border: 1px solid var(--border-strong); background: var(--surface); font-family: var(--font-mono); font-weight: 700; font-size: 13px; color: var(--text); }
+.points-badge .ic { width: 14px; height: 14px; }
+.points-badge .ic path { fill: currentColor; stroke: none; }
+
+.profile-wrap { display: flex; flex-direction: column; gap: 14px; }
+.profile-hero { overflow: hidden; }
+.banner { position: relative; height: 190px; background: var(--surface-2); }
+.banner-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.banner-placeholder { background: linear-gradient(120deg, var(--uc, #3a3a3a), var(--bg)); }
+.banner-actions { position: absolute; right: 12px; top: 12px; display: flex; gap: 8px; z-index: 2; }
+.banner-actions .icon-btn { background: var(--bg-2); }
+.profile-hero-body { display: flex; gap: 20px; padding: 0 22px 22px; align-items: flex-end; margin-top: -40px; position: relative; z-index: 1; flex-wrap: wrap; }
+.uframe.big { background: var(--bg); }
+.uframe.big img.gh-avatar { width: 88px; height: 88px; border: 3px solid var(--bg); box-shadow: var(--shadow-sm); }
+.profile-hero-info { flex: 1; min-width: 220px; padding-top: 44px; }
+.profile-hero-info h2 { margin: 0 0 4px; font-size: 24px; font-weight: 800; letter-spacing: -0.02em; font-family: var(--font-mono); }
+.profile-hero-sub { display: flex; align-items: center; gap: 4px; margin-bottom: 12px; font-size: 13.5px; }
+.profile-hero-sub .muted { font-size: 13.5px; }
+@media (max-width: 640px) {
+  .profile-hero-body { align-items: center; flex-direction: column; text-align: center; }
+  .profile-hero-info { padding-top: 10px; }
+  .profile-hero-sub { justify-content: center; }
+  .profile-actions { justify-content: center; }
+}
+
+/* предметы (профиль + магазин) */
+.owned-grid { display: flex; flex-direction: column; gap: 18px; }
+.owned-col h4 { margin: 0 0 10px; font-size: 13px; font-family: var(--font-mono); color: var(--text-2); font-weight: 600; }
+.items-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px; }
+.item-card { padding: 16px 14px; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.item-preview { height: 60px; display: grid; place-items: center; }
+.frame-preview { width: 54px; height: 54px; border-radius: 50%; display: block; }
+.badge-preview { font-size: 22px; line-height: 1; padding: 7px 13px; border-radius: 999px; font-family: var(--font-mono); font-weight: 800; }
+.item-name { font-size: 13.5px; font-weight: 700; font-family: var(--font-mono); }
+.item-price { font-size: 11.5px; color: var(--text-3); font-family: var(--font-mono); }
+.item-actions { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: center; }
+.item-actions .icon-btn { width: 32px; height: 32px; }
+.item-actions .icon-btn .ic { width: 14px; height: 14px; }
+
+.shop-head { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; flex-wrap: wrap; }
+.shop-head h2 { margin: 0; font-size: 21px; font-weight: 800; font-family: var(--font-mono); display: flex; align-items: center; gap: 10px; }
+.shop-head h2 .ic { width: 20px; height: 20px; }
+.shop-head h2 .ic path { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============================================================
    ВХОД
    ============================================================ */
 .auth-card { max-width: 560px; margin: 30px auto; padding: 32px; }

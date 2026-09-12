@@ -226,6 +226,128 @@
     });
   }
 
+  /* ---------- профили, очки и магазин ---------- */
+  const PROFILES_DIR = "profiles";
+  const SHOP_PATH = "data/shop.json";
+
+  const DEFAULT_SHOP = {
+    frames: [
+      { id: "f_neon", name: "Неон", price: 120, icon: "💠", bg: "conic-gradient(from 180deg, #22d3ee, #a855f7, #f472b6, #22d3ee)", shadow: "0 0 14px rgba(168,85,247,0.55)" },
+      { id: "f_gold", name: "Золото", price: 250, icon: "🥇", bg: "conic-gradient(from 0deg, #fbbf24, #f59e0b, #fde68a, #fbbf24)", shadow: "0 0 14px rgba(251,191,36,0.55)" },
+      { id: "f_rgb", name: "RGB", price: 400, icon: "🌈", bg: "conic-gradient(from 0deg, #ff4d4d, #ffd84d, #4dff88, #4dd2ff, #b84dff, #ff4d4d)", shadow: "0 0 16px rgba(255,255,255,0.5)" },
+      { id: "f_glitch", name: "Глитч", price: 180, icon: "⚡", bg: "linear-gradient(120deg, #ffffff, #888888, #ffffff)", shadow: "0 0 10px rgba(255,255,255,0.7)" }
+    ],
+    badges: [
+      { id: "b_star", name: "Звезда", price: 80, icon: "★", label: "★", color: "#0b0b0b", bg: "#ffd84d" },
+      { id: "b_flame", name: "Огонь", price: 150, icon: "🔥", label: "🔥", color: "#ffffff", bg: "#e11d48" },
+      { id: "b_crown", name: "Корона", price: 500, icon: "👑", label: "👑", color: "#7a4d00", bg: "#ffd700" },
+      { id: "b_dev", name: "DEV", price: 200, icon: "DEV", label: "DEV", color: "#ffffff", bg: "#0a0a0a" }
+    ]
+  };
+
+  function b64decode(str) {
+    const bin = atob(String(str).replace(/\s/g, ""));
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return new TextDecoder().decode(bytes);
+  }
+
+  function listPath(path) {
+    return request("GET", `/repos/${CFG.owner}/${CFG.repo}/contents/${encodePath(path)}?ref=${encodeURIComponent(CFG.branch)}`);
+  }
+
+  async function getJson(path) {
+    try {
+      const { body } = await request("GET", `/repos/${CFG.owner}/${CFG.repo}/contents/${encodePath(path)}?ref=${encodeURIComponent(CFG.branch)}`);
+      return { data: JSON.parse(b64decode(body.content)), sha: body.sha };
+    } catch (e) {
+      if (e.status === 404) return { data: null, sha: null };
+      throw e;
+    }
+  }
+
+  function putJson(path, data, sha, message) {
+    const payload = { message: message || "update", content: base64EncodeUnicode(JSON.stringify(data, null, 2)), branch: CFG.branch };
+    if (sha) payload.sha = sha;
+    return request("PUT", `/repos/${CFG.owner}/${CFG.repo}/contents/${encodePath(path)}`, { json: payload });
+  }
+
+  function putRawFile(path, base64, message, sha) {
+    const payload = { message: message || "upload", content: base64, branch: CFG.branch };
+    if (sha) payload.sha = sha;
+    return request("PUT", `/repos/${CFG.owner}/${CFG.repo}/contents/${encodePath(path)}`, { json: payload });
+  }
+
+  function deletePath(path, sha, message) {
+    return request("DELETE", `/repos/${CFG.owner}/${CFG.repo}/contents/${encodePath(path)}`, {
+      json: { message: message || "delete", sha: sha, branch: CFG.branch }
+    });
+  }
+
+  function rawUrl(path) {
+    const p = String(path).split("/").map(encodeURIComponent).join("/");
+    return `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${encodeURIComponent(CFG.branch)}/${p}`;
+  }
+
+  function defaultProfile(login) {
+    return { login: login, color: "", banner: "", points: 0, owned: [], equipped: { frame: "", badge: "" } };
+  }
+
+  async function getProfile(login) {
+    try {
+      const { data } = await getJson(`${PROFILES_DIR}/${login}.json`);
+      const base = defaultProfile(login);
+      if (data && typeof data === "object") {
+        return Object.assign(base, data, {
+          equipped: Object.assign({ frame: "", badge: "" }, data.equipped || {}),
+          owned: Array.isArray(data.owned) ? data.owned : []
+        });
+      }
+      return base;
+    } catch (e) {
+      return defaultProfile(login);
+    }
+  }
+
+  async function updateProfile(login, mutator) {
+    let lastErr = null;
+    for (let i = 0; i < 3; i++) {
+      try {
+        const { data, sha } = await getJson(`${PROFILES_DIR}/${login}.json`);
+        const p = data && typeof data === "object" ? Object.assign(defaultProfile(login), data) : defaultProfile(login);
+        p.equipped = Object.assign({ frame: "", badge: "" }, p.equipped || {});
+        p.owned = Array.isArray(p.owned) ? p.owned : [];
+        mutator(p);
+        p.updated_at = new Date().toISOString();
+        const res = await putJson(`${PROFILES_DIR}/${login}.json`, p, sha, `Профиль ${login}: обновление`);
+        return res.body;
+      } catch (e) {
+        lastErr = e;
+        if (e.status !== 409) throw e;
+      }
+    }
+    throw lastErr || new ApiError("Не удалось сохранить профиль (конфликт версий).", 409);
+  }
+
+  async function earnPoints(login, amount) {
+    if (!amount || !login) return;
+    await updateProfile(login, (p) => {
+      p.points = Math.max(0, (p.points || 0) + amount);
+    });
+  }
+
+  async function getShop() {
+    const { data, sha } = await getJson(SHOP_PATH);
+    if (data && typeof data === "object") {
+      return { data: { frames: Array.isArray(data.frames) ? data.frames : [], badges: Array.isArray(data.badges) ? data.badges : [] }, sha: sha };
+    }
+    return { data: JSON.parse(JSON.stringify(DEFAULT_SHOP)), sha: null };
+  }
+
+  function saveShop(shop, sha) {
+    return putJson(SHOP_PATH, shop, sha, "Магазин: обновление ассортимента");
+  }
+
   // path может содержать слэши — кодируем только спецсимволы, не слэши
   function encodePath(p) {
     return p.split("/").map(encodeURIComponent).join("/");
@@ -254,6 +376,9 @@
     listReactions, addReaction, deleteReaction,
     listLabels, createLabel,
     contentPath, listDir, getFileMeta, putFile, putFileUpdate, deleteFile, createFolder,
-    encodePath, base64EncodeUnicode
+    encodePath, base64EncodeUnicode,
+    b64decode, listPath, getJson, putJson, putRawFile, deletePath, rawUrl,
+    defaultProfile, getProfile, updateProfile, earnPoints, getShop, saveShop,
+    DEFAULT_SHOP, PROFILES_DIR, SHOP_PATH
   };
 })();
