@@ -81,7 +81,7 @@
       const b = document.createElement("button");
       b.className = "chip" + (state.category === cat.label ? " active" : "");
       b.dataset.cat = cat.label;
-      b.innerHTML = `<span class="dot" style="background:${cat.color}"></span>${escapeHtml(cat.label)}`;
+      b.innerHTML = `<span class="dot"></span>${escapeHtml(cat.label)}`;
       b.addEventListener("click", () => setCategory(cat.label));
       chips.appendChild(b);
     }
@@ -185,8 +185,8 @@
     return `
       <article class="post-card" data-num="${p.number}" style="--i:${i}">
         <div class="post-card-top">
-          ${cat ? `<span class="cat-badge" style="background:${cat.color}">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
-          ${p.state === "closed" ? `<span class="cat-badge" style="background:#6b7280">закрыт</span>` : ""}
+          ${cat ? `<span class="cat-badge">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
+          ${p.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}
         </div>
         <h2 class="post-card-title">${escapeHtml(p.title)}</h2>
         ${preview ? `<p class="post-card-preview">${preview}</p>` : ""}
@@ -233,8 +233,8 @@
       <div class="post-detail">
         <article class="card post-article">
           <div class="post-article-header">
-            ${cat ? `<span class="cat-badge" style="background:${cat.color}">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
-            ${issue.state === "closed" ? `<span class="cat-badge" style="background:#6b7280">закрыт</span>` : ""}
+            ${cat ? `<span class="cat-badge">${icon(cat.icon)} ${escapeHtml(cat.label)}</span>` : ""}
+            ${issue.state === "closed" ? `<span class="cat-badge closed">закрыт</span>` : ""}
             <h1>${escapeHtml(issue.title)}</h1>
             <div class="byline">
               ${avatar(issue.user, 80)}
