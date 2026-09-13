@@ -13,6 +13,12 @@
       "name": "DedSec",
       "price": 10000,
       "image": "data/shop/frames/f_mtyx75av.png"
+    },
+    {
+      "id": "f_mtzuhffc",
+      "name": "yabloko",
+      "price": 1,
+      "image": "data/shop/frames/f_mtzuhffc.png"
     }
   ],
   "badges": [
