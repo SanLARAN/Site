@@ -2,14 +2,15 @@
   "login": "SanLARAN",
   "color": "#ffffff",
   "banner": "profiles/SanLARAN/banner.jpg",
-  "points": 5,
+  "points": 4,
   "owned": [
     "f_mtyx75av",
-    "b_mtyxqzs7"
+    "b_mtyxqzs7",
+    "f_mtzuhffc"
   ],
   "equipped": {
     "frame": "f_mtyx75av",
     "badge": "b_mtyxqzs7"
   },
-  "updated_at": "2026-09-12T23:55:53.806Z"
+  "updated_at": "2026-09-13T13:23:41.770Z"
 }
